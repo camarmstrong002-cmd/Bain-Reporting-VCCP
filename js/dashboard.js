@@ -1,37 +1,46 @@
 // ============================================================
-// Bain VCCP Dashboard - Main Application
+// Bain VCCP Dashboard - Premium Dark Theme
 // ============================================================
 
-// Chart.js global config
-Chart.defaults.font.family = "'Inter', sans-serif";
+// Chart.js global config - Dark theme optimised
+Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
 Chart.defaults.font.size = 11;
-Chart.defaults.color = '#6B7280';
-Chart.defaults.plugins.tooltip.backgroundColor = '#1A1A2E';
-Chart.defaults.plugins.tooltip.cornerRadius = 6;
-Chart.defaults.plugins.tooltip.padding = 10;
+Chart.defaults.color = '#6B6B80';
+Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(22, 22, 31, 0.95)';
+Chart.defaults.plugins.tooltip.borderColor = 'rgba(255,255,255,0.08)';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.padding = 12;
 Chart.defaults.plugins.tooltip.titleFont = { size: 12, weight: '600' };
 Chart.defaults.plugins.tooltip.bodyFont = { size: 11 };
+Chart.defaults.plugins.tooltip.titleColor = '#F1F1F4';
+Chart.defaults.plugins.tooltip.bodyColor = '#A0A0B8';
+Chart.defaults.plugins.tooltip.displayColors = true;
+Chart.defaults.plugins.tooltip.boxPadding = 4;
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
 Chart.defaults.plugins.legend.labels.pointStyle = 'circle';
-Chart.defaults.plugins.legend.labels.padding = 16;
-Chart.defaults.elements.line.tension = 0.3;
-Chart.defaults.elements.bar.borderRadius = 4;
-Chart.defaults.scale.grid = { color: 'rgba(0,0,0,0.04)' };
+Chart.defaults.plugins.legend.labels.padding = 20;
+Chart.defaults.plugins.legend.labels.color = '#A0A0B8';
+Chart.defaults.elements.line.tension = 0.35;
+Chart.defaults.elements.bar.borderRadius = 6;
+Chart.defaults.scale.grid = { color: 'rgba(255, 255, 255, 0.04)', drawBorder: false };
+Chart.defaults.scale.border = { display: false };
+Chart.defaults.scale.ticks = { color: '#6B6B80', font: { size: 10 } };
 
 const COLORS = {
-  economist: '#CC0000',
-  ft: '#E8A94E',
-  wsj: '#4A99CC',
-  nativo: '#2D8B57',
-  mobkoi: '#7C5BBF',
-  red: '#CC0000',
-  blue: '#4A99CC',
-  gold: '#E8A94E',
-  green: '#2D8B57',
-  purple: '#7C5BBF',
-  orange: '#E07B53',
-  teal: '#3BBFA0',
-  chart: ['#CC0000', '#4A99CC', '#E8A94E', '#2D8B57', '#7C5BBF', '#E07B53', '#3BBFA0', '#9333EA']
+  economist: '#F87171',
+  ft: '#F5C563',
+  wsj: '#60A5FA',
+  nativo: '#34D399',
+  mobkoi: '#A78BFA',
+  red: '#E53935',
+  blue: '#60A5FA',
+  gold: '#F5C563',
+  green: '#34D399',
+  purple: '#A78BFA',
+  orange: '#FB923C',
+  teal: '#2DD4BF',
+  chart: ['#E53935', '#60A5FA', '#F5C563', '#34D399', '#A78BFA', '#FB923C', '#2DD4BF', '#F472B6']
 };
 
 const SITE_COLOR_MAP = {
@@ -65,7 +74,7 @@ function fmtPct(n) {
 }
 
 function fmtCurrency(n) {
-  return '£' + n.toLocaleString();
+  return '\u00A3' + n.toLocaleString();
 }
 
 function getVendorClass(site) {
@@ -80,6 +89,15 @@ function destroyChart(id) {
     charts[id].destroy();
     delete charts[id];
   }
+}
+
+// Create gradient fill for chart lines
+function createGradient(ctx, color, height) {
+  const gradient = ctx.createLinearGradient(0, 0, 0, height || 320);
+  gradient.addColorStop(0, color + '30');
+  gradient.addColorStop(0.5, color + '10');
+  gradient.addColorStop(1, color + '00');
+  return gradient;
 }
 
 // ============================================================
@@ -135,11 +153,7 @@ function renderPlacementKPIs() {
   const totalImps = sites.reduce((s, k) => s + SITE_TOTALS[k].impressions, 0);
   const totalClicks = sites.reduce((s, k) => s + SITE_TOTALS[k].clicks, 0);
   const avgCTR = totalClicks / totalImps * 100;
-
-  // Count unique placements
   const numPlacements = TOP_PLACEMENTS.length;
-
-  // Calculate months active
   const monthsActive = MONTHS.length;
 
   document.getElementById('placement-kpis').innerHTML = `
@@ -178,18 +192,26 @@ function renderPlacementKPIs() {
 
 function renderImpByPublisherChart(metric) {
   destroyChart('chartImpByPublisher');
-  const ctx = document.getElementById('chartImpByPublisher').getContext('2d');
+  const canvas = document.getElementById('chartImpByPublisher');
+  const ctx = canvas.getContext('2d');
   const sites = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
-  const datasets = sites.map(site => ({
-    label: site === 'The Economist' ? 'Economist' : site === 'Nativo Inc.' ? 'Nativo' : site,
-    data: metric === 'impressions' ? SITE_MONTHLY[site] : SITE_MONTHLY_CLICKS[site],
-    backgroundColor: SITE_COLOR_MAP[site] + '20',
-    borderColor: SITE_COLOR_MAP[site],
-    borderWidth: 2,
-    fill: true,
-    pointRadius: 3,
-    pointHoverRadius: 5
-  }));
+
+  const datasets = sites.map(site => {
+    const color = SITE_COLOR_MAP[site];
+    return {
+      label: site === 'The Economist' ? 'Economist' : site === 'Nativo Inc.' ? 'Nativo' : site,
+      data: metric === 'impressions' ? SITE_MONTHLY[site] : SITE_MONTHLY_CLICKS[site],
+      backgroundColor: createGradient(ctx, color),
+      borderColor: color,
+      borderWidth: 2.5,
+      fill: true,
+      pointRadius: 0,
+      pointHoverRadius: 6,
+      pointHoverBackgroundColor: color,
+      pointHoverBorderColor: '#0A0A0F',
+      pointHoverBorderWidth: 3
+    };
+  });
 
   charts['chartImpByPublisher'] = new Chart(ctx, {
     type: 'line',
@@ -210,6 +232,9 @@ function renderImpByPublisherChart(metric) {
         y: {
           beginAtZero: true,
           ticks: { callback: v => fmt(v) }
+        },
+        x: {
+          ticks: { maxRotation: 45, font: { size: 10 } }
         }
       }
     }
@@ -234,13 +259,22 @@ function renderPublisherShareChart() {
     type: 'doughnut',
     data: {
       labels,
-      datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }]
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 0,
+        hoverOffset: 8,
+        hoverBorderWidth: 0
+      }]
     },
     options: {
       responsive: true,
-      cutout: '65%',
+      cutout: '72%',
       plugins: {
-        legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } },
+        legend: {
+          position: 'bottom',
+          labels: { padding: 16, font: { size: 11 } }
+        },
         tooltip: {
           callbacks: {
             label: (ctx) => {
@@ -268,20 +302,23 @@ function renderRegionPerfChart() {
         {
           label: 'Impressions',
           data: data.map(d => d.impressions),
-          backgroundColor: COLORS.red + '80',
+          backgroundColor: COLORS.red + '60',
           borderColor: COLORS.red,
           borderWidth: 1,
-          yAxisID: 'y'
+          yAxisID: 'y',
+          borderRadius: 6
         },
         {
           label: 'CTR (%)',
           data: data.map(d => d.ctr),
           type: 'line',
           borderColor: COLORS.blue,
-          backgroundColor: COLORS.blue,
-          borderWidth: 2,
-          pointRadius: 4,
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          pointRadius: 5,
           pointBackgroundColor: COLORS.blue,
+          pointBorderColor: '#0A0A0F',
+          pointBorderWidth: 2,
           yAxisID: 'y1'
         }
       ]
@@ -292,8 +329,8 @@ function renderRegionPerfChart() {
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { position: 'bottom' } },
       scales: {
-        y: { beginAtZero: true, ticks: { callback: v => fmt(v) }, title: { display: true, text: 'Impressions' } },
-        y1: { position: 'right', beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' }, title: { display: true, text: 'CTR' }, grid: { display: false } }
+        y: { beginAtZero: true, ticks: { callback: v => fmt(v) }, title: { display: true, text: 'Impressions', color: '#6B6B80' } },
+        y1: { position: 'right', beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' }, title: { display: true, text: 'CTR', color: '#6B6B80' }, grid: { display: false } }
       }
     }
   });
@@ -311,9 +348,10 @@ function renderAudiencePerfChart() {
         {
           label: 'Impressions',
           data: TARGETING_DATA.map(d => d.impressions),
-          backgroundColor: COLORS.chart.slice(0, TARGETING_DATA.length).map(c => c + '80'),
+          backgroundColor: COLORS.chart.slice(0, TARGETING_DATA.length).map(c => c + '50'),
           borderColor: COLORS.chart.slice(0, TARGETING_DATA.length),
-          borderWidth: 1
+          borderWidth: 1,
+          borderRadius: 6
         }
       ]
     },
@@ -348,7 +386,7 @@ function renderPlacementTable() {
   const tbody = document.getElementById('placementTableBody');
   tbody.innerHTML = pageData.map(p => `
     <tr>
-      <td title="${p.placement}" style="max-width:320px;overflow:hidden;text-overflow:ellipsis;">${p.placement}</td>
+      <td title="${p.placement}" style="max-width:320px;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary);font-weight:500;">${p.placement}</td>
       <td><span class="vendor-tag ${getVendorClass(p.site)}">${p.site === 'The Economist' ? 'Economist' : p.site === 'Nativo Inc.' ? 'Nativo' : p.site}</span></td>
       <td>${p.region}</td>
       <td>${p.targeting}</td>
@@ -395,7 +433,6 @@ let sortDir = 1;
 function sortTable(col) {
   if (sortColumn === col) sortDir *= -1;
   else { sortColumn = col; sortDir = 1; }
-  // Re-render will sort
   renderPlacementTable();
 }
 
@@ -465,20 +502,23 @@ function renderThemePerfChart() {
         {
           label: 'Impressions',
           data: CREATIVE_THEMES.map(t => t.impressions),
-          backgroundColor: CREATIVE_THEMES.map(t => (themeColors[t.theme] || COLORS.red) + '80'),
+          backgroundColor: CREATIVE_THEMES.map(t => (themeColors[t.theme] || COLORS.red) + '50'),
           borderColor: CREATIVE_THEMES.map(t => themeColors[t.theme] || COLORS.red),
           borderWidth: 1,
-          yAxisID: 'y'
+          yAxisID: 'y',
+          borderRadius: 6
         },
         {
           label: 'CTR (%)',
           type: 'line',
           data: CREATIVE_THEMES.map(t => t.ctr),
-          borderColor: '#1A1A2E',
-          backgroundColor: '#1A1A2E',
-          borderWidth: 2,
+          borderColor: '#F1F1F4',
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
           pointRadius: 6,
-          pointBackgroundColor: '#1A1A2E',
+          pointBackgroundColor: '#F1F1F4',
+          pointBorderColor: '#0A0A0F',
+          pointBorderWidth: 2,
           yAxisID: 'y1'
         }
       ]
@@ -488,8 +528,8 @@ function renderThemePerfChart() {
       maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom' } },
       scales: {
-        y: { beginAtZero: true, ticks: { callback: v => fmt(v) }, title: { display: true, text: 'Impressions' } },
-        y1: { position: 'right', beginAtZero: true, ticks: { callback: v => v + '%' }, title: { display: true, text: 'CTR %' }, grid: { display: false } }
+        y: { beginAtZero: true, ticks: { callback: v => fmt(v) }, title: { display: true, text: 'Impressions', color: '#6B6B80' } },
+        y1: { position: 'right', beginAtZero: true, ticks: { callback: v => v + '%' }, title: { display: true, text: 'CTR %', color: '#6B6B80' }, grid: { display: false } }
       }
     }
   });
@@ -497,7 +537,8 @@ function renderThemePerfChart() {
 
 function renderThemeCTRChart() {
   destroyChart('chartThemeCTR');
-  const ctx = document.getElementById('chartThemeCTR').getContext('2d');
+  const canvas = document.getElementById('chartThemeCTR');
+  const ctx = canvas.getContext('2d');
   const months = MONTHLY_THEME_CTR.map(d => d.month);
   const themeColors = { 'AI': COLORS.red, 'Macro': COLORS.blue, 'Energy': COLORS.gold };
 
@@ -505,12 +546,15 @@ function renderThemeCTRChart() {
     label: theme,
     data: MONTHLY_THEME_CTR.map(d => d[theme] || null),
     borderColor: themeColors[theme],
-    backgroundColor: themeColors[theme] + '20',
-    borderWidth: 2,
-    pointRadius: 4,
-    pointBackgroundColor: themeColors[theme],
+    backgroundColor: createGradient(ctx, themeColors[theme]),
+    borderWidth: 2.5,
+    pointRadius: 0,
+    pointHoverRadius: 6,
+    pointHoverBackgroundColor: themeColors[theme],
+    pointHoverBorderColor: '#0A0A0F',
+    pointHoverBorderWidth: 3,
     spanGaps: true,
-    fill: false
+    fill: true
   }));
 
   charts['chartThemeCTR'] = new Chart(ctx, {
@@ -522,7 +566,7 @@ function renderThemeCTRChart() {
       interaction: { mode: 'index', intersect: false },
       plugins: { legend: { position: 'bottom' } },
       scales: {
-        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' }, title: { display: true, text: 'CTR %' } }
+        y: { beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' }, title: { display: true, text: 'CTR %', color: '#6B6B80' } }
       }
     }
   });
@@ -541,9 +585,10 @@ function renderMessagingChart(metric) {
       datasets: [{
         label: metric === 'impressions' ? 'Impressions' : 'CTR (%)',
         data: sortedData.map(m => metric === 'impressions' ? m.impressions : m.ctr),
-        backgroundColor: sortedData.map((m, i) => COLORS.chart[i % COLORS.chart.length] + '70'),
+        backgroundColor: sortedData.map((m, i) => COLORS.chart[i % COLORS.chart.length] + '50'),
         borderColor: sortedData.map((m, i) => COLORS.chart[i % COLORS.chart.length]),
-        borderWidth: 1
+        borderWidth: 1,
+        borderRadius: 4
       }]
     },
     options: {
@@ -562,7 +607,8 @@ function renderMessagingChart(metric) {
         }
       },
       scales: {
-        x: { ticks: { callback: v => metric === 'impressions' ? fmt(v) : v + '%' } }
+        x: { ticks: { callback: v => metric === 'impressions' ? fmt(v) : v + '%' } },
+        y: { ticks: { font: { size: 10 } } }
       }
     }
   });
@@ -581,15 +627,15 @@ function renderTopBottomCreatives() {
 
   function renderList(container, items, isTop) {
     document.getElementById(container).innerHTML = items.map((m, i) => `
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;${i < items.length - 1 ? 'border-bottom:1px solid #E5E7EB;' : ''}">
-        <div style="width:28px;height:28px;border-radius:50%;background:${isTop ? '#ECFDF5' : '#FEF2F2'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${isTop ? '#059669' : '#DC2626'}">${i + 1}</div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;${i < items.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : ''}">
+        <div style="width:30px;height:30px;border-radius:50%;background:${isTop ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.12)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${isTop ? '#34D399' : '#F87171'};flex-shrink:0;">${i + 1}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.message}</div>
-          <div style="font-size:11px;color:#9CA3AF;">${fmtFull(m.impressions)} impressions</div>
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary);">${m.message}</div>
+          <div style="font-size:11px;color:var(--text-muted);">${fmtFull(m.impressions)} impressions</div>
         </div>
-        <div style="text-align:right;">
-          <div style="font-size:15px;font-weight:700;color:${isTop ? '#059669' : '#DC2626'}">${fmtPct(m.ctr)}</div>
-          <div style="font-size:10px;color:#9CA3AF;">CTR</div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:16px;font-weight:800;color:${isTop ? '#34D399' : '#F87171'}">${fmtPct(m.ctr)}</div>
+          <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">CTR</div>
         </div>
       </div>
     `).join('');
@@ -603,7 +649,7 @@ function renderCreativeTable() {
   const maxCTR = Math.max(...CREATIVE_MESSAGES.map(m => m.ctr));
   document.getElementById('creativeTableBody').innerHTML = CREATIVE_MESSAGES.map(m => `
     <tr>
-      <td style="font-weight:500;">${m.message}</td>
+      <td style="font-weight:500;color:var(--text-primary);">${m.message}</td>
       <td class="number">${fmtFull(m.impressions)}</td>
       <td class="number">${fmtFull(m.clicks)}</td>
       <td class="number">${fmtPct(m.ctr)}</td>
@@ -634,7 +680,6 @@ function renderSOVKPIs() {
   const overallAvgFreq = avgFreqs.reduce((a, b) => a + b, 0) / avgFreqs.length;
   const totalAudSize = AUDIENCE_DEFINITIONS.reduce((s, a) => s + a.size, 0);
 
-  // Find highest frequency month across all publishers
   let maxFreq = 0, maxFreqPub = '', maxFreqMonth = '';
   for (const pub of publishers) {
     for (const [month, freq] of Object.entries(SOV_FREQUENCY[pub].monthly)) {
@@ -684,15 +729,14 @@ function renderSOVVendorCards() {
     const months = Object.entries(data.monthly);
     const maxFreq = Math.max(...months.map(([, f]) => f));
     const minFreq = Math.min(...months.map(([, f]) => f));
-
-    // Get audience segments for this publisher
     const auds = AUDIENCE_DEFINITIONS.filter(a => a.publisher === pub || a.publisher === pub + ' ');
+    const color = pubColors[pub];
 
     return `
-      <div class="sov-vendor-card" style="border-top: 3px solid ${pubColors[pub]}">
-        <div class="sov-vendor-name" style="color:${pubColors[pub]}">${pub === 'FT' ? 'Financial Times' : pub === 'WSJ' ? 'Wall Street Journal' : 'The Economist'}</div>
-        <div style="font-size:36px;font-weight:800;color:#1A1A2E;margin:8px 0;">${data.avg.toFixed(1)}x</div>
-        <div style="font-size:11px;color:#9CA3AF;margin-bottom:16px;">Average Frequency</div>
+      <div class="sov-vendor-card" style="border-top: 2px solid ${color};">
+        <div class="sov-vendor-name" style="color:${color}">${pub === 'FT' ? 'Financial Times' : pub === 'WSJ' ? 'Wall Street Journal' : 'The Economist'}</div>
+        <div style="font-size:42px;font-weight:900;color:var(--text-primary);margin:12px 0;letter-spacing:-2px;line-height:1;">${data.avg.toFixed(1)}x</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;">Average Frequency</div>
         <div class="sov-metric-row">
           <span class="sov-metric-label">Peak Frequency</span>
           <span class="sov-metric-value">${maxFreq.toFixed(1)}x</span>
@@ -710,9 +754,9 @@ function renderSOVVendorCards() {
           <span class="sov-metric-value">${auds.length}</span>
         </div>
         ${auds.map(a => `
-          <div style="text-align:left;padding:6px 0;border-bottom:1px solid #E5E7EB;font-size:11px;">
-            <div style="font-weight:600;">${a.audience}</div>
-            <div style="color:#9CA3AF;">${fmt(a.size)} pool size</div>
+          <div style="text-align:left;padding:8px 0;border-bottom:1px solid var(--border-subtle);font-size:11px;">
+            <div style="font-weight:600;color:var(--text-primary);">${a.audience}</div>
+            <div style="color:var(--text-muted);">${fmt(a.size)} pool size</div>
           </div>
         `).join('')}
       </div>
@@ -722,7 +766,8 @@ function renderSOVVendorCards() {
 
 function renderFrequencyTrendChart() {
   destroyChart('chartFreqTrend');
-  const ctx = document.getElementById('chartFreqTrend').getContext('2d');
+  const canvas = document.getElementById('chartFreqTrend');
+  const ctx = canvas.getContext('2d');
   const allMonths = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const pubColors = { 'WSJ': COLORS.wsj, 'Economist': COLORS.economist, 'FT': COLORS.ft };
 
@@ -730,12 +775,13 @@ function renderFrequencyTrendChart() {
     label: pub === 'FT' ? 'Financial Times' : pub === 'WSJ' ? 'Wall Street Journal' : 'The Economist',
     data: allMonths.map(m => data.monthly[m] || null),
     borderColor: pubColors[pub],
-    backgroundColor: pubColors[pub] + '15',
+    backgroundColor: createGradient(ctx, pubColors[pub]),
     borderWidth: 3,
-    pointRadius: 5,
-    pointBackgroundColor: pubColors[pub],
-    pointBorderColor: '#fff',
-    pointBorderWidth: 2,
+    pointRadius: 0,
+    pointHoverRadius: 7,
+    pointHoverBackgroundColor: pubColors[pub],
+    pointHoverBorderColor: '#0A0A0F',
+    pointHoverBorderWidth: 3,
     spanGaps: true,
     fill: true
   }));
@@ -761,7 +807,7 @@ function renderFrequencyTrendChart() {
           min: 2,
           max: 6,
           ticks: { callback: v => v.toFixed(1) + 'x' },
-          title: { display: true, text: 'Frequency' }
+          title: { display: true, text: 'Frequency', color: '#6B6B80' }
         }
       }
     }
@@ -784,9 +830,9 @@ function renderAudienceBreakdown() {
         ${AUDIENCE_DEFINITIONS.map(a => `
           <tr>
             <td><span class="vendor-tag ${getVendorClass(a.publisher)}">${a.publisher}</span></td>
-            <td style="font-weight:500;">${a.audience}</td>
+            <td style="font-weight:500;color:var(--text-primary);">${a.audience}</td>
             <td class="number">${fmtFull(a.size)}</td>
-            <td style="font-size:11px;color:#6B7280;white-space:normal;max-width:300px;">${a.definition}</td>
+            <td style="font-size:11px;color:var(--text-tertiary);white-space:normal;max-width:300px;">${a.definition}</td>
           </tr>
         `).join('')}
       </tbody>
@@ -808,9 +854,11 @@ function renderFreqDistChart() {
         label: pub,
         data: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => SOV_FREQUENCY[pub].monthly[m] || 0),
         borderColor: pubColors[pub],
-        backgroundColor: pubColors[pub] + '20',
+        backgroundColor: pubColors[pub] + '15',
         borderWidth: 2,
         pointBackgroundColor: pubColors[pub],
+        pointBorderColor: '#0A0A0F',
+        pointBorderWidth: 1,
         pointRadius: 3
       }))
     },
@@ -823,7 +871,15 @@ function renderFreqDistChart() {
           beginAtZero: false,
           min: 2,
           max: 6,
-          ticks: { callback: v => v + 'x', stepSize: 1 }
+          ticks: {
+            callback: v => v + 'x',
+            stepSize: 1,
+            color: '#6B6B80',
+            backdropColor: 'transparent'
+          },
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          angleLines: { color: 'rgba(255,255,255,0.04)' },
+          pointLabels: { color: '#A0A0B8', font: { size: 10 } }
         }
       }
     }
@@ -836,18 +892,16 @@ function renderPenetrationHeatmap() {
   const shortMonths = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   function getHeatColor(val, max) {
-    if (!val) return '#F9FAFB';
+    if (!val) return 'rgba(255,255,255,0.02)';
     const intensity = Math.min(val / max, 1);
-    const r = 204;
-    const g = Math.round(255 - intensity * 255);
-    const b = Math.round(255 - intensity * 255);
-    return `rgba(${r}, ${Math.max(g, 0)}, ${Math.max(b, 0)}, ${0.15 + intensity * 0.65})`;
+    // Red-based gradient for Bain branding
+    return `rgba(229, 57, 53, ${0.08 + intensity * 0.55})`;
   }
 
   const maxPen = Math.max(...PENETRATION_DATA.flatMap(d => Object.values(d.months)));
 
   container.innerHTML = `
-    <div style="margin-bottom:16px;font-size:12px;font-weight:600;">Penetration Rate (%) - Economist</div>
+    <div style="margin-bottom:16px;font-size:12px;font-weight:600;color:var(--text-primary);">Penetration Rate (%) - Economist</div>
     <table class="heatmap">
       <thead>
         <tr>
@@ -861,13 +915,13 @@ function renderPenetrationHeatmap() {
             <td>${d.audience}</td>
             ${months.map(m => {
               const val = d.months[m];
-              return `<td style="background:${getHeatColor(val, maxPen)};color:${val && val > maxPen * 0.5 ? '#fff' : '#1A1A2E'};font-weight:${val ? '600' : '400'}">${val ? val.toFixed(1) + '%' : '-'}</td>`;
+              return `<td style="background:${getHeatColor(val, maxPen)};color:${val ? '#F1F1F4' : 'var(--text-muted)'};font-weight:${val ? '600' : '400'}">${val ? val.toFixed(1) + '%' : '-'}</td>`;
             }).join('')}
           </tr>
         `).join('')}
       </tbody>
     </table>
-    <div style="margin-top:24px;font-size:12px;font-weight:600;">Frequency Detail - Economist</div>
+    <div style="margin-top:28px;font-size:12px;font-weight:600;color:var(--text-primary);">Frequency Detail - Economist</div>
     <table class="heatmap" style="margin-top:8px;">
       <thead>
         <tr>
@@ -882,7 +936,7 @@ function renderPenetrationHeatmap() {
             ${months.map(m => {
               const val = d.months[m];
               const maxF = 6;
-              return `<td style="background:${getHeatColor(val, maxF)};color:${val && val > maxF * 0.5 ? '#fff' : '#1A1A2E'};font-weight:${val ? '600' : '400'}">${val ? val.toFixed(1) + 'x' : '-'}</td>`;
+              return `<td style="background:${getHeatColor(val, maxF)};color:${val ? '#F1F1F4' : 'var(--text-muted)'};font-weight:${val ? '600' : '400'}">${val ? val.toFixed(1) + 'x' : '-'}</td>`;
             }).join('')}
           </tr>
         `).join('')}
@@ -902,9 +956,8 @@ function exportView() {
 // INITIALIZE
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
-  // Hide loading overlay
   setTimeout(() => {
     document.getElementById('loadingOverlay').classList.add('hidden');
     renderPlacementsView();
-  }, 500);
+  }, 600);
 });
