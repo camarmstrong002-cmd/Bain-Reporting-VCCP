@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bain & Company - VCCP Media Reporting Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Loading Bain Dashboard...</div>
+</div>
+
+<div class="app-container">
+
+  <!-- ============================================================
+       SIDEBAR
+       ============================================================ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-mark">B</div>
+        <div>
+          <div class="logo-text">Bain</div>
+          <div class="logo-subtitle">VCCP Reporting</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Dashboard Views</div>
+      <div class="nav-item active" data-view="placements" onclick="switchView('placements')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Placements & Sites
+      </div>
+      <div class="nav-item" data-view="creative" onclick="switchView('creative')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Creative Insights
+      </div>
+      <div class="nav-item" data-view="sov" onclick="switchView('sov')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+        Share of Voice
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Data Period</div>
+      <div class="nav-item" style="font-size:12px; color: rgba(255,255,255,0.5); cursor:default; padding: 6px 12px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        Jan 2025 - Feb 2026
+      </div>
+      <div class="nav-section-label" style="margin-top:16px">Vendors</div>
+      <div class="nav-item" style="font-size:12px; cursor:default; padding: 6px 12px;">
+        <span class="vendor-tag ft" style="font-size:10px">FT</span>
+        Financial Times
+      </div>
+      <div class="nav-item" style="font-size:12px; cursor:default; padding: 6px 12px;">
+        <span class="vendor-tag wsj" style="font-size:10px">WSJ</span>
+        Wall Street Journal
+      </div>
+      <div class="nav-item" style="font-size:12px; cursor:default; padding: 6px 12px;">
+        <span class="vendor-tag econ" style="font-size:10px">ECN</span>
+        The Economist
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div style="margin-bottom:4px">Bain & Company x VCCP</div>
+      <div>Last updated: 3 Mar 2026</div>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+       MAIN CONTENT
+       ============================================================ -->
+  <main class="main-content">
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <h1 class="page-title" id="pageTitle">Placements & Sites</h1>
+        <div class="breadcrumb">Bain Global Central Brand Campaign <span>2025 - 2026</span></div>
+      </div>
+      <div class="top-bar-right">
+        <button class="btn btn-secondary" onclick="exportView()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+      <div class="filter-group">
+        <span class="filter-label">Time Period</span>
+        <select class="filter-select" id="filterMonth" onchange="applyFilters()">
+          <option value="all">All Months</option>
+          <option value="2025-01">Jan 2025</option>
+          <option value="2025-02">Feb 2025</option>
+          <option value="2025-03">Mar 2025</option>
+          <option value="2025-04">Apr 2025</option>
+          <option value="2025-05">May 2025</option>
+          <option value="2025-06">Jun 2025</option>
+          <option value="2025-07">Jul 2025</option>
+          <option value="2025-08">Aug 2025</option>
+          <option value="2025-09">Sep 2025</option>
+          <option value="2025-10">Oct 2025</option>
+          <option value="2025-11">Nov 2025</option>
+          <option value="2025-12">Dec 2025</option>
+          <option value="2026-01">Jan 2026</option>
+          <option value="2026-02">Feb 2026</option>
+        </select>
+      </div>
+      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">Publisher</span>
+        <select class="filter-select" id="filterSite" onchange="applyFilters()">
+          <option value="all">All Publishers</option>
+          <option value="The Economist">The Economist</option>
+          <option value="FT">Financial Times</option>
+          <option value="WSJ">Wall Street Journal</option>
+          <option value="Nativo Inc.">Nativo</option>
+          <option value="Mobkoi">Mobkoi</option>
+        </select>
+      </div>
+      <div class="filter-divider"></div>
+      <div class="filter-group">
+        <span class="filter-label">Region</span>
+        <select class="filter-select" id="filterRegion" onchange="applyFilters()">
+          <option value="all">All Regions</option>
+          <option value="US">US</option>
+          <option value="CA">Canada</option>
+          <option value="NAM">NAM</option>
+          <option value="EMEA Tier 1">EMEA Tier 1</option>
+          <option value="EMEA Tier 2">EMEA Tier 2</option>
+          <option value="APAC">APAC</option>
+          <option value="LATAM">LATAM</option>
+          <option value="Global">Global</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+
+      <!-- ============================================================
+           VIEW 1: PLACEMENTS & SITES
+           ============================================================ -->
+      <div class="dashboard-view active" id="view-placements">
+        <!-- KPI Cards -->
+        <div class="kpi-grid" id="placement-kpis"></div>
+
+        <!-- Charts Row 1 -->
+        <div class="chart-grid chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Impressions by Publisher</div>
+                <div class="chart-card-subtitle">Monthly trend across all publishers</div>
+              </div>
+              <div class="chart-toggle">
+                <button class="chart-toggle-btn active" onclick="toggleImpChart('impressions', this)">Impressions</button>
+                <button class="chart-toggle-btn" onclick="toggleImpChart('clicks', this)">Clicks</button>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="chartImpByPublisher"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Publisher Share</div>
+                <div class="chart-card-subtitle">Distribution of total impressions</div>
+              </div>
+            </div>
+            <div class="chart-card-body" style="display:flex;align-items:center;justify-content:center;">
+              <canvas id="chartPublisherShare" style="max-width:300px;max-height:300px;"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="chart-grid chart-grid-2" style="margin-top: var(--space-lg);">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Performance by Region</div>
+                <div class="chart-card-subtitle">Impressions and CTR by geographic region</div>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="chartRegionPerf"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Performance by Audience</div>
+                <div class="chart-card-subtitle">Targeting type breakdown</div>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="chartAudiencePerf"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Placement Table -->
+        <div class="table-card" style="margin-top: var(--space-lg);">
+          <div class="table-card-header">
+            <div class="table-card-title">Top Placements by Impressions</div>
+            <div class="table-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input type="text" placeholder="Search placements..." id="placementSearch" oninput="filterPlacementTable()">
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="placementTable">
+              <thead>
+                <tr>
+                  <th onclick="sortTable('placement')">Placement <span class="sort-icon">&#x25B4;&#x25BE;</span></th>
+                  <th onclick="sortTable('site')">Publisher <span class="sort-icon">&#x25B4;&#x25BE;</span></th>
+                  <th onclick="sortTable('region')">Region <span class="sort-icon">&#x25B4;&#x25BE;</span></th>
+                  <th onclick="sortTable('targeting')">Targeting <span class="sort-icon">&#x25B4;&#x25BE;</span></th>
+                  <th onclick="sortTable('format')">Format <span class="sort-icon">&#x25B4;&#x25BE;</span></th>
+                  <th class="number" onclick="sortTable('impressions')">Impressions <span class="sort-icon">&#x25B4;&#x25BE;</span></th>
+                  <th class="number" onclick="sortTable('clicks')">Clicks <span class="sort-icon">&#x25B4;&#x25BE;</span></th>
+                  <th class="number" onclick="sortTable('ctr')">CTR <span class="sort-icon">&#x25B4;&#x25BE;</span></th>
+                </tr>
+              </thead>
+              <tbody id="placementTableBody"></tbody>
+            </table>
+          </div>
+          <div class="table-footer">
+            <span id="placementTableInfo">Showing 1-25 of 100</span>
+            <div class="pagination" id="placementPagination"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           VIEW 2: CREATIVE INSIGHTS
+           ============================================================ -->
+      <div class="dashboard-view" id="view-creative">
+        <!-- KPI Cards -->
+        <div class="kpi-grid" id="creative-kpis"></div>
+
+        <!-- Theme Performance -->
+        <div class="chart-grid chart-grid-2">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Performance by Theme</div>
+                <div class="chart-card-subtitle">AI, Macro, and Energy campaign themes</div>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="chartThemePerf"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Monthly CTR Trend by Theme</div>
+                <div class="chart-card-subtitle">Click-through rate evolution over time</div>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="chartThemeCTR"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messaging Performance -->
+        <div class="chart-grid" style="margin-top: var(--space-lg); grid-template-columns: 1fr;">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Creative Messaging Performance</div>
+                <div class="chart-card-subtitle">Impressions and CTR by creative message variant</div>
+              </div>
+              <div class="chart-toggle">
+                <button class="chart-toggle-btn active" onclick="toggleMsgChart('impressions', this)">Impressions</button>
+                <button class="chart-toggle-btn" onclick="toggleMsgChart('ctr', this)">CTR</button>
+              </div>
+            </div>
+            <div class="chart-card-body" style="height:420px;">
+              <canvas id="chartMessaging"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top/Bottom Creatives -->
+        <div class="chart-grid chart-grid-2" style="margin-top: var(--space-lg);">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Top Performing Creatives</div>
+                <div class="chart-card-subtitle">Highest CTR creative messages</div>
+              </div>
+            </div>
+            <div class="chart-card-body" id="topCreatives"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Creatives Requiring Attention</div>
+                <div class="chart-card-subtitle">Lowest CTR - consider optimisation</div>
+              </div>
+            </div>
+            <div class="chart-card-body" id="bottomCreatives"></div>
+          </div>
+        </div>
+
+        <!-- Creative Table -->
+        <div class="table-card" style="margin-top: var(--space-lg);">
+          <div class="table-card-header">
+            <div class="table-card-title">All Creative Messages - Full Breakdown</div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="creativeTable">
+              <thead>
+                <tr>
+                  <th>Message</th>
+                  <th class="number">Impressions</th>
+                  <th class="number">Clicks</th>
+                  <th class="number">CTR</th>
+                  <th>Performance</th>
+                </tr>
+              </thead>
+              <tbody id="creativeTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           VIEW 3: SHARE OF VOICE
+           ============================================================ -->
+      <div class="dashboard-view" id="view-sov">
+        <!-- KPI Cards -->
+        <div class="kpi-grid" id="sov-kpis"></div>
+
+        <!-- SOV Vendor Comparison -->
+        <div class="sov-comparison" id="sovVendorCards"></div>
+
+        <!-- Frequency Trend -->
+        <div class="chart-grid" style="grid-template-columns: 1fr;">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Average Frequency Trend by Publisher</div>
+                <div class="chart-card-subtitle">Monthly frequency across WSJ, Economist, and FT (Feb 2025 - Dec 2025)</div>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="chartFreqTrend"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOV Heatmap -->
+        <div class="chart-grid chart-grid-2" style="margin-top: var(--space-lg);">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Reach & Frequency by Audience</div>
+                <div class="chart-card-subtitle">Publisher audience definitions and sizing</div>
+              </div>
+            </div>
+            <div class="chart-card-body" id="audienceBreakdown"></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Frequency Distribution</div>
+                <div class="chart-card-subtitle">Average frequency by publisher</div>
+              </div>
+            </div>
+            <div class="chart-card-body">
+              <canvas id="chartFreqDist"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Penetration Heatmap -->
+        <div class="chart-grid" style="margin-top: var(--space-lg); grid-template-columns: 1fr;">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Penetration Rate Heatmap</div>
+                <div class="chart-card-subtitle">Economist audience penetration by month and targeting type</div>
+              </div>
+            </div>
+            <div class="chart-card-body" id="penetrationHeatmap"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="data/dashboard-data.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
