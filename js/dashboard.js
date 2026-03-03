@@ -23,9 +23,10 @@ Chart.defaults.plugins.legend.labels.padding = 20;
 Chart.defaults.plugins.legend.labels.color = '#A0A0B8';
 Chart.defaults.elements.line.tension = 0.35;
 Chart.defaults.elements.bar.borderRadius = 6;
-Chart.defaults.scale.grid = { color: 'rgba(255, 255, 255, 0.04)', drawBorder: false };
-Chart.defaults.scale.border = { display: false };
-Chart.defaults.scale.ticks = { color: '#6B6B80', font: { size: 10 } };
+Chart.defaults.scale.grid.color = 'rgba(255, 255, 255, 0.04)';
+Chart.defaults.scale.grid.drawBorder = false;
+Chart.defaults.scale.border.display = false;
+Chart.defaults.scale.ticks.color = '#6B6B80';
 
 const COLORS = {
   economist: '#F87171',
@@ -91,13 +92,13 @@ function destroyChart(id) {
   }
 }
 
-// Create gradient fill for chart lines
-function createGradient(ctx, color, height) {
-  const gradient = ctx.createLinearGradient(0, 0, 0, height || 320);
-  gradient.addColorStop(0, color + '30');
-  gradient.addColorStop(0.5, color + '10');
-  gradient.addColorStop(1, color + '00');
-  return gradient;
+// Safe fill colour for line charts (avoids canvas gradient stack overflow)
+function fillColor(hexColor, alpha) {
+  // Convert hex to rgba
+  const r = parseInt(hexColor.slice(1,3), 16);
+  const g = parseInt(hexColor.slice(3,5), 16);
+  const b = parseInt(hexColor.slice(5,7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha || 0.08})`;
 }
 
 // ============================================================
@@ -201,7 +202,7 @@ function renderImpByPublisherChart(metric) {
     return {
       label: site === 'The Economist' ? 'Economist' : site === 'Nativo Inc.' ? 'Nativo' : site,
       data: metric === 'impressions' ? SITE_MONTHLY[site] : SITE_MONTHLY_CLICKS[site],
-      backgroundColor: createGradient(ctx, color),
+      backgroundColor: fillColor(color, 0.1),
       borderColor: color,
       borderWidth: 2.5,
       fill: true,
@@ -546,7 +547,7 @@ function renderThemeCTRChart() {
     label: theme,
     data: MONTHLY_THEME_CTR.map(d => d[theme] || null),
     borderColor: themeColors[theme],
-    backgroundColor: createGradient(ctx, themeColors[theme]),
+    backgroundColor: fillColor(themeColors[theme], 0.1),
     borderWidth: 2.5,
     pointRadius: 0,
     pointHoverRadius: 6,
@@ -775,7 +776,7 @@ function renderFrequencyTrendChart() {
     label: pub === 'FT' ? 'Financial Times' : pub === 'WSJ' ? 'Wall Street Journal' : 'The Economist',
     data: allMonths.map(m => data.monthly[m] || null),
     borderColor: pubColors[pub],
-    backgroundColor: createGradient(ctx, pubColors[pub]),
+    backgroundColor: fillColor(pubColors[pub], 0.1),
     borderWidth: 3,
     pointRadius: 0,
     pointHoverRadius: 7,
