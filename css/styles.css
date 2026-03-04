@@ -32,25 +32,25 @@
   --border-hover: rgba(255, 255, 255, 0.14);
   --border-accent: rgba(245, 197, 99, 0.3);
 
-  /* Vendor Signature Colors - Gold/Amber family */
-  --ft-color: #FFD97D;
-  --ft-glow: rgba(255, 217, 125, 0.2);
+  /* Vendor Signature Colors - Gold/Amber family (wide spread) */
+  --ft-color: #FFE8A3;
+  --ft-glow: rgba(255, 232, 163, 0.2);
   --wsj-color: #F5C563;
   --wsj-glow: rgba(245, 197, 99, 0.2);
-  --econ-color: #E5A84B;
-  --econ-glow: rgba(229, 168, 75, 0.2);
-  --nativo-color: #D4943A;
-  --mobkoi-color: #C49A3C;
+  --econ-color: #D4943A;
+  --econ-glow: rgba(212, 148, 58, 0.2);
+  --nativo-color: #A67C2E;
+  --mobkoi-color: #FFD04F;
 
-  /* Chart Palette - Gold/Amber spectrum on dark */
+  /* Chart Palette - Gold/Amber spectrum on dark (wide spread) */
   --chart-1: #F5C563;
-  --chart-2: #FFD97D;
-  --chart-3: #E5A84B;
-  --chart-4: #D4943A;
-  --chart-5: #DAA520;
-  --chart-6: #C49A3C;
-  --chart-7: #F0D78C;
-  --chart-8: #B8860B;
+  --chart-2: #FFE8A3;
+  --chart-3: #D4943A;
+  --chart-4: #FFD04F;
+  --chart-5: #A67C2E;
+  --chart-6: #DAA520;
+  --chart-7: #8B6914;
+  --chart-8: #FFEFC1;
 
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.04);
@@ -207,7 +207,7 @@ body::before {
   font-weight: 900;
   font-size: 17px;
   letter-spacing: -0.5px;
-  color: white;
+  color: #0A0A0F;
   box-shadow: 0 2px 8px rgba(245, 197, 99, 0.3);
 }
 
@@ -571,7 +571,7 @@ body::before {
   line-height: 1.1;
 }
 
-.kpi-value.red {
+.kpi-value.gold {
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -590,13 +590,13 @@ body::before {
 }
 
 .kpi-change.positive {
-  background: rgba(245, 197, 99, 0.12);
-  color: #FFD97D;
+  background: rgba(255, 232, 163, 0.12);
+  color: #FFE8A3;
 }
 
 .kpi-change.negative {
-  background: rgba(184, 134, 11, 0.15);
-  color: #B8860B;
+  background: rgba(139, 105, 20, 0.15);
+  color: #8B6914;
 }
 
 .kpi-change.neutral {
@@ -873,7 +873,7 @@ body::before {
 }
 
 .vendor-tag.ft {
-  background: rgba(255, 217, 125, 0.12);
+  background: rgba(255, 232, 163, 0.12);
   color: var(--ft-color);
 }
 .vendor-tag.wsj {
@@ -881,7 +881,7 @@ body::before {
   color: var(--wsj-color);
 }
 .vendor-tag.econ {
-  background: rgba(229, 168, 75, 0.12);
+  background: rgba(212, 148, 58, 0.12);
   color: var(--econ-color);
 }
 

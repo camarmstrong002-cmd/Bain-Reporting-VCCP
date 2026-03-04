@@ -29,28 +29,28 @@ Chart.defaults.scale.border.display = false;
 Chart.defaults.scale.ticks.color = '#6B6B80';
 
 const COLORS = {
-  economist: '#E5A84B',
-  ft: '#FFD97D',
+  economist: '#D4943A',
+  ft: '#FFE8A3',
   wsj: '#F5C563',
-  nativo: '#D4943A',
-  mobkoi: '#C49A3C',
+  nativo: '#A67C2E',
+  mobkoi: '#FFD04F',
   primary: '#F5C563',
-  bright: '#FFD97D',
+  bright: '#FFE8A3',
   gold: '#F5C563',
-  amber: '#E5A84B',
-  warmAmber: '#D4943A',
-  darkGold: '#C49A3C',
+  amber: '#D4943A',
+  warmAmber: '#A67C2E',
+  darkGold: '#8B6914',
   goldenrod: '#DAA520',
-  paleGold: '#F0D78C',
-  chart: ['#F5C563', '#FFD97D', '#E5A84B', '#D4943A', '#DAA520', '#C49A3C', '#F0D78C', '#B8860B']
+  paleGold: '#FFE8A3',
+  chart: ['#F5C563', '#FFE8A3', '#D4943A', '#FFD04F', '#A67C2E', '#DAA520', '#8B6914', '#FFEFC1']
 };
 
 const SITE_COLOR_MAP = {
-  'The Economist': '#E5A84B',
-  'FT': '#FFD97D',
+  'The Economist': '#D4943A',
+  'FT': '#FFE8A3',
   'WSJ': '#F5C563',
-  'Nativo Inc.': '#D4943A',
-  'Mobkoi': '#C49A3C'
+  'Nativo Inc.': '#A67C2E',
+  'Mobkoi': '#FFD04F'
 };
 
 let charts = {};
@@ -161,7 +161,7 @@ function renderPlacementKPIs() {
   document.getElementById('placement-kpis').innerHTML = `
     <div class="kpi-card highlight">
       <div class="kpi-label">Total Impressions</div>
-      <div class="kpi-value red">${fmt(totalImps)}</div>
+      <div class="kpi-value gold">${fmt(totalImps)}</div>
       <div class="kpi-subtitle">${fmtFull(totalImps)} delivered</div>
     </div>
     <div class="kpi-card">
@@ -198,14 +198,16 @@ function renderImpByPublisherChart(metric) {
   const ctx = canvas.getContext('2d');
   const sites = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
 
-  const datasets = sites.map(site => {
+  const dashPatterns = [[], [8, 4], [3, 3], [12, 4, 3, 4], [6, 2]];
+  const datasets = sites.map((site, idx) => {
     const color = SITE_COLOR_MAP[site];
     return {
       label: site === 'The Economist' ? 'Economist' : site === 'Nativo Inc.' ? 'Nativo' : site,
       data: metric === 'impressions' ? SITE_MONTHLY[site] : SITE_MONTHLY_CLICKS[site],
-      backgroundColor: fillColor(color, 0.1),
+      backgroundColor: fillColor(color, 0.08),
       borderColor: color,
       borderWidth: 2.5,
+      borderDash: dashPatterns[idx] || [],
       fill: true,
       pointRadius: 0,
       pointHoverRadius: 6,
@@ -264,9 +266,10 @@ function renderPublisherShareChart() {
       datasets: [{
         data,
         backgroundColor: colors,
-        borderWidth: 0,
+        borderColor: '#0A0A0F',
+        borderWidth: 3,
         hoverOffset: 8,
-        hoverBorderWidth: 0
+        hoverBorderWidth: 3
       }]
     },
     options: {
@@ -460,7 +463,7 @@ function renderCreativeKPIs() {
   document.getElementById('creative-kpis').innerHTML = `
     <div class="kpi-card highlight">
       <div class="kpi-label">Creative Impressions</div>
-      <div class="kpi-value red">${fmt(totalImps)}</div>
+      <div class="kpi-value gold">${fmt(totalImps)}</div>
       <div class="kpi-subtitle">Across ${CREATIVE_THEMES.length} themes</div>
     </div>
     <div class="kpi-card">
@@ -494,7 +497,7 @@ function renderCreativeKPIs() {
 function renderThemePerfChart() {
   destroyChart('chartThemePerf');
   const ctx = document.getElementById('chartThemePerf').getContext('2d');
-  const themeColors = { 'AI': COLORS.primary, 'Macro': COLORS.amber, 'Energy': COLORS.bright };
+  const themeColors = { 'AI': '#F5C563', 'Macro': '#D4943A', 'Energy': '#FFE8A3' };
 
   charts['chartThemePerf'] = new Chart(ctx, {
     type: 'bar',
@@ -542,14 +545,16 @@ function renderThemeCTRChart() {
   const canvas = document.getElementById('chartThemeCTR');
   const ctx = canvas.getContext('2d');
   const months = MONTHLY_THEME_CTR.map(d => d.month);
-  const themeColors = { 'AI': COLORS.primary, 'Macro': COLORS.amber, 'Energy': COLORS.bright };
+  const themeColors = { 'AI': '#F5C563', 'Macro': '#D4943A', 'Energy': '#FFE8A3' };
 
+  const themeDashes = { 'AI': [], 'Macro': [8, 4], 'Energy': [3, 3] };
   const datasets = ['AI', 'Macro', 'Energy'].map(theme => ({
     label: theme,
     data: MONTHLY_THEME_CTR.map(d => d[theme] || null),
     borderColor: themeColors[theme],
-    backgroundColor: fillColor(themeColors[theme], 0.1),
+    backgroundColor: fillColor(themeColors[theme], 0.08),
     borderWidth: 2.5,
+    borderDash: themeDashes[theme] || [],
     pointRadius: 0,
     pointHoverRadius: 6,
     pointHoverBackgroundColor: themeColors[theme],
@@ -580,6 +585,12 @@ function renderMessagingChart(metric) {
   const top20 = CREATIVE_MESSAGES.slice(0, 20);
   const sortedData = metric === 'ctr' ? [...top20].sort((a, b) => b.ctr - a.ctr) : top20;
 
+  function lerpColor(a, b, t) {
+    const ar = parseInt(a.slice(1,3),16), ag = parseInt(a.slice(3,5),16), ab = parseInt(a.slice(5,7),16);
+    const br = parseInt(b.slice(1,3),16), bg = parseInt(b.slice(3,5),16), bb = parseInt(b.slice(5,7),16);
+    const r = Math.round(ar + (br-ar)*t), g = Math.round(ag + (bg-ag)*t), bl = Math.round(ab + (bb-ab)*t);
+    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${bl.toString(16).padStart(2,'0')}`;
+  }
   charts['chartMessaging'] = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -587,8 +598,8 @@ function renderMessagingChart(metric) {
       datasets: [{
         label: metric === 'impressions' ? 'Impressions' : 'CTR (%)',
         data: sortedData.map(m => metric === 'impressions' ? m.impressions : m.ctr),
-        backgroundColor: sortedData.map((m, i) => COLORS.chart[i % COLORS.chart.length] + '50'),
-        borderColor: sortedData.map((m, i) => COLORS.chart[i % COLORS.chart.length]),
+        backgroundColor: sortedData.map((m, i) => lerpColor('#FFE8A3', '#8B6914', i / Math.max(sortedData.length - 1, 1)) + '70'),
+        borderColor: sortedData.map((m, i) => lerpColor('#FFE8A3', '#8B6914', i / Math.max(sortedData.length - 1, 1))),
         borderWidth: 1,
         borderRadius: 4
       }]
@@ -630,13 +641,13 @@ function renderTopBottomCreatives() {
   function renderList(container, items, isTop) {
     document.getElementById(container).innerHTML = items.map((m, i) => `
       <div style="display:flex;align-items:center;gap:12px;padding:12px 0;${i < items.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : ''}">
-        <div style="width:30px;height:30px;border-radius:50%;background:${isTop ? 'rgba(245,197,99,0.12)' : 'rgba(184,134,11,0.12)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${isTop ? '#FFD97D' : '#B8860B'};flex-shrink:0;">${i + 1}</div>
+        <div style="width:30px;height:30px;border-radius:50%;background:${isTop ? 'rgba(245,197,99,0.12)' : 'rgba(139,105,20,0.12)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${isTop ? '#FFE8A3' : '#8B6914'};flex-shrink:0;">${i + 1}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary);">${m.message}</div>
           <div style="font-size:11px;color:var(--text-muted);">${fmtFull(m.impressions)} impressions</div>
         </div>
         <div style="text-align:right;flex-shrink:0;">
-          <div style="font-size:16px;font-weight:800;color:${isTop ? '#FFD97D' : '#B8860B'}">${fmtPct(m.ctr)}</div>
+          <div style="font-size:16px;font-weight:800;color:${isTop ? '#FFE8A3' : '#8B6914'}">${fmtPct(m.ctr)}</div>
           <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">CTR</div>
         </div>
       </div>
@@ -692,7 +703,7 @@ function renderSOVKPIs() {
   document.getElementById('sov-kpis').innerHTML = `
     <div class="kpi-card highlight">
       <div class="kpi-label">Avg Frequency</div>
-      <div class="kpi-value red">${overallAvgFreq.toFixed(1)}x</div>
+      <div class="kpi-value gold">${overallAvgFreq.toFixed(1)}x</div>
       <div class="kpi-subtitle">Across all publishers</div>
     </div>
     <div class="kpi-card">
@@ -725,7 +736,7 @@ function renderSOVKPIs() {
 
 function renderSOVVendorCards() {
   const container = document.getElementById('sovVendorCards');
-  const pubColors = { 'WSJ': '#F5C563', 'Economist': '#E5A84B', 'FT': '#FFD97D' };
+  const pubColors = { 'WSJ': '#F5C563', 'Economist': '#D4943A', 'FT': '#FFE8A3' };
 
   container.innerHTML = Object.entries(SOV_FREQUENCY).map(([pub, data]) => {
     const months = Object.entries(data.monthly);
@@ -771,14 +782,16 @@ function renderFrequencyTrendChart() {
   const canvas = document.getElementById('chartFreqTrend');
   const ctx = canvas.getContext('2d');
   const allMonths = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const pubColors = { 'WSJ': '#F5C563', 'Economist': '#E5A84B', 'FT': '#FFD97D' };
+  const pubColors = { 'WSJ': '#F5C563', 'Economist': '#D4943A', 'FT': '#FFE8A3' };
 
+  const pubDashes = { 'WSJ': [], 'Economist': [8, 4], 'FT': [3, 3] };
   const datasets = Object.entries(SOV_FREQUENCY).map(([pub, data]) => ({
     label: pub === 'FT' ? 'Financial Times' : pub === 'WSJ' ? 'Wall Street Journal' : 'The Economist',
     data: allMonths.map(m => data.monthly[m] || null),
     borderColor: pubColors[pub],
-    backgroundColor: fillColor(pubColors[pub], 0.1),
+    backgroundColor: fillColor(pubColors[pub], 0.08),
     borderWidth: 3,
+    borderDash: pubDashes[pub] || [],
     pointRadius: 0,
     pointHoverRadius: 7,
     pointHoverBackgroundColor: pubColors[pub],
@@ -845,7 +858,7 @@ function renderAudienceBreakdown() {
 function renderFreqDistChart() {
   destroyChart('chartFreqDist');
   const ctx = document.getElementById('chartFreqDist').getContext('2d');
-  const pubColors = { 'WSJ': '#F5C563', 'Economist': '#E5A84B', 'FT': '#FFD97D' };
+  const pubColors = { 'WSJ': '#F5C563', 'Economist': '#D4943A', 'FT': '#FFE8A3' };
   const pubs = Object.keys(SOV_FREQUENCY);
 
   charts['chartFreqDist'] = new Chart(ctx, {
