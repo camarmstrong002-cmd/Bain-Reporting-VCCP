@@ -1,0 +1,7 @@
+{
+  "preview": {
+    "command": "python3 -m http.server 8080",
+    "port": 8080,
+    "name": "Bain VCCP Dashboard"
+  }
+}
