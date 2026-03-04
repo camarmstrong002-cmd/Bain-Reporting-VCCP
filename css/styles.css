@@ -13,12 +13,12 @@
   --bg-elevated: #1C1C28;
   --bg-surface: rgba(255, 255, 255, 0.03);
 
-  /* Bain Brand Accent */
-  --accent: #E53935;
-  --accent-bright: #FF5252;
-  --accent-glow: rgba(229, 57, 53, 0.25);
-  --accent-subtle: rgba(229, 57, 53, 0.08);
-  --accent-gradient: linear-gradient(135deg, #E53935, #FF6B6B);
+  /* Brand Accent - Gold/Yellow */
+  --accent: #F5C563;
+  --accent-bright: #FFD97D;
+  --accent-glow: rgba(245, 197, 99, 0.25);
+  --accent-subtle: rgba(245, 197, 99, 0.08);
+  --accent-gradient: linear-gradient(135deg, #E5A84B, #FFD97D);
 
   /* Text Hierarchy */
   --text-primary: #F1F1F4;
@@ -30,27 +30,27 @@
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.08);
   --border-hover: rgba(255, 255, 255, 0.14);
-  --border-accent: rgba(229, 57, 53, 0.3);
+  --border-accent: rgba(245, 197, 99, 0.3);
 
-  /* Vendor Signature Colors */
-  --ft-color: #F5C563;
-  --ft-glow: rgba(245, 197, 99, 0.2);
-  --wsj-color: #60A5FA;
-  --wsj-glow: rgba(96, 165, 250, 0.2);
-  --econ-color: #F87171;
-  --econ-glow: rgba(248, 113, 113, 0.2);
-  --nativo-color: #34D399;
-  --mobkoi-color: #A78BFA;
+  /* Vendor Signature Colors - Gold/Amber family */
+  --ft-color: #FFD97D;
+  --ft-glow: rgba(255, 217, 125, 0.2);
+  --wsj-color: #F5C563;
+  --wsj-glow: rgba(245, 197, 99, 0.2);
+  --econ-color: #E5A84B;
+  --econ-glow: rgba(229, 168, 75, 0.2);
+  --nativo-color: #D4943A;
+  --mobkoi-color: #C49A3C;
 
-  /* Chart Palette - Vibrant on dark */
-  --chart-1: #E53935;
-  --chart-2: #60A5FA;
-  --chart-3: #F5C563;
-  --chart-4: #34D399;
-  --chart-5: #A78BFA;
-  --chart-6: #FB923C;
-  --chart-7: #2DD4BF;
-  --chart-8: #F472B6;
+  /* Chart Palette - Gold/Amber spectrum on dark */
+  --chart-1: #F5C563;
+  --chart-2: #FFD97D;
+  --chart-3: #E5A84B;
+  --chart-4: #D4943A;
+  --chart-5: #DAA520;
+  --chart-6: #C49A3C;
+  --chart-7: #F0D78C;
+  --chart-8: #B8860B;
 
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.04);
@@ -83,7 +83,7 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.3);
-  --shadow-glow: 0 0 30px rgba(229, 57, 53, 0.15);
+  --shadow-glow: 0 0 30px rgba(245, 197, 99, 0.15);
   --shadow-card: 0 0 0 1px var(--glass-border), 0 4px 12px rgba(0, 0, 0, 0.2);
 
   /* Transitions */
@@ -126,9 +126,9 @@ body::before {
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(229, 57, 53, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(96, 165, 250, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 50% at 50% 80%, rgba(167, 139, 250, 0.02) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(245, 197, 99, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(229, 168, 75, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 50% at 50% 80%, rgba(196, 154, 60, 0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -154,7 +154,7 @@ body::before {
 
 ::selection {
   background: var(--accent);
-  color: white;
+  color: #1A1A2E;
 }
 
 /* ============================================================
@@ -208,7 +208,7 @@ body::before {
   font-size: 17px;
   letter-spacing: -0.5px;
   color: white;
-  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+  box-shadow: 0 2px 8px rgba(245, 197, 99, 0.3);
 }
 
 .logo-text {
@@ -451,12 +451,12 @@ body::before {
 
 .btn-primary {
   background: var(--accent-gradient);
-  color: white;
-  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.25);
+  color: #1A1A2E;
+  box-shadow: 0 2px 8px rgba(245, 197, 99, 0.25);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 4px 16px rgba(229, 57, 53, 0.35);
+  box-shadow: 0 4px 16px rgba(245, 197, 99, 0.35);
   transform: translateY(-1px);
 }
 
@@ -590,13 +590,13 @@ body::before {
 }
 
 .kpi-change.positive {
-  background: rgba(52, 211, 153, 0.12);
-  color: #34D399;
+  background: rgba(245, 197, 99, 0.12);
+  color: #FFD97D;
 }
 
 .kpi-change.negative {
-  background: rgba(248, 113, 113, 0.12);
-  color: #F87171;
+  background: rgba(184, 134, 11, 0.15);
+  color: #B8860B;
 }
 
 .kpi-change.neutral {
@@ -711,8 +711,8 @@ body::before {
 
 .chart-toggle-btn.active {
   background: var(--accent);
-  color: white;
-  box-shadow: 0 1px 4px rgba(229, 57, 53, 0.3);
+  color: #1A1A2E;
+  box-shadow: 0 1px 4px rgba(245, 197, 99, 0.3);
 }
 
 .chart-card-body {
@@ -848,7 +848,7 @@ body::before {
 }
 
 .data-table tbody tr:hover {
-  background: rgba(229, 57, 53, 0.04);
+  background: rgba(245, 197, 99, 0.04);
 }
 
 .data-table tbody tr:last-child td {
@@ -873,15 +873,15 @@ body::before {
 }
 
 .vendor-tag.ft {
-  background: rgba(245, 197, 99, 0.12);
+  background: rgba(255, 217, 125, 0.12);
   color: var(--ft-color);
 }
 .vendor-tag.wsj {
-  background: rgba(96, 165, 250, 0.12);
+  background: rgba(245, 197, 99, 0.12);
   color: var(--wsj-color);
 }
 .vendor-tag.econ {
-  background: rgba(248, 113, 113, 0.12);
+  background: rgba(229, 168, 75, 0.12);
   color: var(--econ-color);
 }
 
@@ -907,13 +907,13 @@ body::before {
 }
 
 .perf-bar-fill.good {
-  background: linear-gradient(90deg, #059669, #34D399);
+  background: linear-gradient(90deg, #E5A84B, #FFD97D);
 }
 .perf-bar-fill.moderate {
-  background: linear-gradient(90deg, #D97706, #FBBF24);
+  background: linear-gradient(90deg, #C49A3C, #DAA520);
 }
 .perf-bar-fill.low {
-  background: linear-gradient(90deg, #DC2626, #F87171);
+  background: linear-gradient(90deg, #8B6914, #B8860B);
 }
 
 .perf-bar-value {
@@ -965,9 +965,9 @@ body::before {
 
 .pagination button.active {
   background: var(--accent);
-  color: white;
+  color: #1A1A2E;
   border-color: var(--accent);
-  box-shadow: 0 2px 6px rgba(229, 57, 53, 0.3);
+  box-shadow: 0 2px 6px rgba(245, 197, 99, 0.3);
 }
 
 .pagination button:disabled {
@@ -1326,8 +1326,8 @@ body::before {
 }
 
 .status-dot.live {
-  background: #34D399;
-  box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+  background: #F5C563;
+  box-shadow: 0 0 8px rgba(245, 197, 99, 0.4);
   animation: pulseGlow 2s ease-in-out infinite;
 }
 
@@ -1337,12 +1337,12 @@ body::before {
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  background: rgba(52, 211, 153, 0.08);
-  border: 1px solid rgba(52, 211, 153, 0.15);
+  background: rgba(245, 197, 99, 0.08);
+  border: 1px solid rgba(245, 197, 99, 0.15);
   border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 600;
-  color: #34D399;
+  color: #F5C563;
 }
 
 .live-badge::before {
@@ -1350,8 +1350,8 @@ body::before {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #34D399;
-  box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+  background: #F5C563;
+  box-shadow: 0 0 6px rgba(245, 197, 99, 0.6);
 }
 
 /* Tab underline indicator */

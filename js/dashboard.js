@@ -29,27 +29,28 @@ Chart.defaults.scale.border.display = false;
 Chart.defaults.scale.ticks.color = '#6B6B80';
 
 const COLORS = {
-  economist: '#F87171',
-  ft: '#F5C563',
-  wsj: '#60A5FA',
-  nativo: '#34D399',
-  mobkoi: '#A78BFA',
-  red: '#E53935',
-  blue: '#60A5FA',
+  economist: '#E5A84B',
+  ft: '#FFD97D',
+  wsj: '#F5C563',
+  nativo: '#D4943A',
+  mobkoi: '#C49A3C',
+  primary: '#F5C563',
+  bright: '#FFD97D',
   gold: '#F5C563',
-  green: '#34D399',
-  purple: '#A78BFA',
-  orange: '#FB923C',
-  teal: '#2DD4BF',
-  chart: ['#E53935', '#60A5FA', '#F5C563', '#34D399', '#A78BFA', '#FB923C', '#2DD4BF', '#F472B6']
+  amber: '#E5A84B',
+  warmAmber: '#D4943A',
+  darkGold: '#C49A3C',
+  goldenrod: '#DAA520',
+  paleGold: '#F0D78C',
+  chart: ['#F5C563', '#FFD97D', '#E5A84B', '#D4943A', '#DAA520', '#C49A3C', '#F0D78C', '#B8860B']
 };
 
 const SITE_COLOR_MAP = {
-  'The Economist': COLORS.economist,
-  'FT': COLORS.ft,
-  'WSJ': COLORS.wsj,
-  'Nativo Inc.': COLORS.nativo,
-  'Mobkoi': COLORS.mobkoi
+  'The Economist': '#E5A84B',
+  'FT': '#FFD97D',
+  'WSJ': '#F5C563',
+  'Nativo Inc.': '#D4943A',
+  'Mobkoi': '#C49A3C'
 };
 
 let charts = {};
@@ -303,8 +304,8 @@ function renderRegionPerfChart() {
         {
           label: 'Impressions',
           data: data.map(d => d.impressions),
-          backgroundColor: COLORS.red + '60',
-          borderColor: COLORS.red,
+          backgroundColor: COLORS.primary + '60',
+          borderColor: COLORS.primary,
           borderWidth: 1,
           yAxisID: 'y',
           borderRadius: 6
@@ -313,11 +314,11 @@ function renderRegionPerfChart() {
           label: 'CTR (%)',
           data: data.map(d => d.ctr),
           type: 'line',
-          borderColor: COLORS.blue,
+          borderColor: COLORS.bright,
           backgroundColor: 'transparent',
           borderWidth: 2.5,
           pointRadius: 5,
-          pointBackgroundColor: COLORS.blue,
+          pointBackgroundColor: COLORS.bright,
           pointBorderColor: '#0A0A0F',
           pointBorderWidth: 2,
           yAxisID: 'y1'
@@ -493,7 +494,7 @@ function renderCreativeKPIs() {
 function renderThemePerfChart() {
   destroyChart('chartThemePerf');
   const ctx = document.getElementById('chartThemePerf').getContext('2d');
-  const themeColors = { 'AI': COLORS.red, 'Macro': COLORS.blue, 'Energy': COLORS.gold };
+  const themeColors = { 'AI': COLORS.primary, 'Macro': COLORS.amber, 'Energy': COLORS.bright };
 
   charts['chartThemePerf'] = new Chart(ctx, {
     type: 'bar',
@@ -503,8 +504,8 @@ function renderThemePerfChart() {
         {
           label: 'Impressions',
           data: CREATIVE_THEMES.map(t => t.impressions),
-          backgroundColor: CREATIVE_THEMES.map(t => (themeColors[t.theme] || COLORS.red) + '50'),
-          borderColor: CREATIVE_THEMES.map(t => themeColors[t.theme] || COLORS.red),
+          backgroundColor: CREATIVE_THEMES.map(t => (themeColors[t.theme] || COLORS.primary) + '50'),
+          borderColor: CREATIVE_THEMES.map(t => themeColors[t.theme] || COLORS.primary),
           borderWidth: 1,
           yAxisID: 'y',
           borderRadius: 6
@@ -541,7 +542,7 @@ function renderThemeCTRChart() {
   const canvas = document.getElementById('chartThemeCTR');
   const ctx = canvas.getContext('2d');
   const months = MONTHLY_THEME_CTR.map(d => d.month);
-  const themeColors = { 'AI': COLORS.red, 'Macro': COLORS.blue, 'Energy': COLORS.gold };
+  const themeColors = { 'AI': COLORS.primary, 'Macro': COLORS.amber, 'Energy': COLORS.bright };
 
   const datasets = ['AI', 'Macro', 'Energy'].map(theme => ({
     label: theme,
@@ -629,13 +630,13 @@ function renderTopBottomCreatives() {
   function renderList(container, items, isTop) {
     document.getElementById(container).innerHTML = items.map((m, i) => `
       <div style="display:flex;align-items:center;gap:12px;padding:12px 0;${i < items.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.06);' : ''}">
-        <div style="width:30px;height:30px;border-radius:50%;background:${isTop ? 'rgba(52,211,153,0.12)' : 'rgba(248,113,113,0.12)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${isTop ? '#34D399' : '#F87171'};flex-shrink:0;">${i + 1}</div>
+        <div style="width:30px;height:30px;border-radius:50%;background:${isTop ? 'rgba(245,197,99,0.12)' : 'rgba(184,134,11,0.12)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${isTop ? '#FFD97D' : '#B8860B'};flex-shrink:0;">${i + 1}</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary);">${m.message}</div>
           <div style="font-size:11px;color:var(--text-muted);">${fmtFull(m.impressions)} impressions</div>
         </div>
         <div style="text-align:right;flex-shrink:0;">
-          <div style="font-size:16px;font-weight:800;color:${isTop ? '#34D399' : '#F87171'}">${fmtPct(m.ctr)}</div>
+          <div style="font-size:16px;font-weight:800;color:${isTop ? '#FFD97D' : '#B8860B'}">${fmtPct(m.ctr)}</div>
           <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">CTR</div>
         </div>
       </div>
@@ -724,7 +725,7 @@ function renderSOVKPIs() {
 
 function renderSOVVendorCards() {
   const container = document.getElementById('sovVendorCards');
-  const pubColors = { 'WSJ': COLORS.wsj, 'Economist': COLORS.economist, 'FT': COLORS.ft };
+  const pubColors = { 'WSJ': '#F5C563', 'Economist': '#E5A84B', 'FT': '#FFD97D' };
 
   container.innerHTML = Object.entries(SOV_FREQUENCY).map(([pub, data]) => {
     const months = Object.entries(data.monthly);
@@ -770,7 +771,7 @@ function renderFrequencyTrendChart() {
   const canvas = document.getElementById('chartFreqTrend');
   const ctx = canvas.getContext('2d');
   const allMonths = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const pubColors = { 'WSJ': COLORS.wsj, 'Economist': COLORS.economist, 'FT': COLORS.ft };
+  const pubColors = { 'WSJ': '#F5C563', 'Economist': '#E5A84B', 'FT': '#FFD97D' };
 
   const datasets = Object.entries(SOV_FREQUENCY).map(([pub, data]) => ({
     label: pub === 'FT' ? 'Financial Times' : pub === 'WSJ' ? 'Wall Street Journal' : 'The Economist',
@@ -844,7 +845,7 @@ function renderAudienceBreakdown() {
 function renderFreqDistChart() {
   destroyChart('chartFreqDist');
   const ctx = document.getElementById('chartFreqDist').getContext('2d');
-  const pubColors = { 'WSJ': COLORS.wsj, 'Economist': COLORS.economist, 'FT': COLORS.ft };
+  const pubColors = { 'WSJ': '#F5C563', 'Economist': '#E5A84B', 'FT': '#FFD97D' };
   const pubs = Object.keys(SOV_FREQUENCY);
 
   charts['chartFreqDist'] = new Chart(ctx, {
@@ -895,8 +896,8 @@ function renderPenetrationHeatmap() {
   function getHeatColor(val, max) {
     if (!val) return 'rgba(255,255,255,0.02)';
     const intensity = Math.min(val / max, 1);
-    // Red-based gradient for Bain branding
-    return `rgba(229, 57, 53, ${0.08 + intensity * 0.55})`;
+    // Gold/yellow-based gradient
+    return `rgba(245, 197, 99, ${0.08 + intensity * 0.55})`;
   }
 
   const maxPen = Math.max(...PENETRATION_DATA.flatMap(d => Object.values(d.months)));
