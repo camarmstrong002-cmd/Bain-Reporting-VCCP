@@ -1,5 +1,5 @@
 // ============================================================
-// Bain VCCP Dashboard - Premium Dark Theme
+// Bain VCCP Dashboard - Interactive Drill-Down
 // ============================================================
 
 // Chart.js global config - Dark theme optimised
@@ -53,10 +53,67 @@ const SITE_COLOR_MAP = {
   'Mobkoi': '#FFD04F'
 };
 
+const DISPLAY_NAMES = {
+  'The Economist': 'Economist',
+  'FT': 'FT',
+  'WSJ': 'WSJ',
+  'Nativo Inc.': 'Nativo',
+  'Mobkoi': 'Mobkoi'
+};
+
 let charts = {};
 let currentView = 'placements';
 let currentPage = 1;
+let creativePage = 1;
 const PAGE_SIZE = 25;
+const CREATIVE_PAGE_SIZE = 15;
+
+// ============================================================
+// DRILL-DOWN STATE
+// ============================================================
+let drillState = { publisher: null, region: null, targeting: null };
+
+function drillToPublisher(site) {
+  drillState.publisher = drillState.publisher === site ? null : site;
+  drillState.region = null;
+  drillState.targeting = null;
+  currentPage = 1;
+  renderPlacementsView();
+}
+
+function drillToRegion(region) {
+  drillState.region = drillState.region === region ? null : region;
+  currentPage = 1;
+  renderPlacementsView();
+}
+
+function drillToTargeting(targeting) {
+  drillState.targeting = drillState.targeting === targeting ? null : targeting;
+  currentPage = 1;
+  renderPlacementsView();
+}
+
+function clearDrill() {
+  drillState = { publisher: null, region: null, targeting: null };
+  currentPage = 1;
+  renderPlacementsView();
+}
+
+function drillBack() {
+  if (drillState.targeting) drillState.targeting = null;
+  else if (drillState.region) drillState.region = null;
+  else if (drillState.publisher) drillState.publisher = null;
+  currentPage = 1;
+  renderPlacementsView();
+}
+
+// Track which filter chip to clear by index
+let _filterChipActions = [];
+function clearFilterChip(idx) {
+  if (_filterChipActions[idx]) {
+    _filterChipActions[idx]();
+  }
+}
 
 // ============================================================
 // UTILITY FUNCTIONS
@@ -93,13 +150,18 @@ function destroyChart(id) {
   }
 }
 
-// Safe fill colour for line charts (avoids canvas gradient stack overflow)
 function fillColor(hexColor, alpha) {
-  // Convert hex to rgba
   const r = parseInt(hexColor.slice(1,3), 16);
   const g = parseInt(hexColor.slice(3,5), 16);
   const b = parseInt(hexColor.slice(5,7), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha || 0.08})`;
+}
+
+function lerpColor(a, b, t) {
+  const ar = parseInt(a.slice(1,3),16), ag = parseInt(a.slice(3,5),16), ab = parseInt(a.slice(5,7),16);
+  const br = parseInt(b.slice(1,3),16), bg = parseInt(b.slice(3,5),16), bb = parseInt(b.slice(5,7),16);
+  const r = Math.round(ar + (br-ar)*t), g = Math.round(ag + (bg-ag)*t), bl = Math.round(ab + (bb-ab)*t);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${bl.toString(16).padStart(2,'0')}`;
 }
 
 // ============================================================
@@ -128,21 +190,85 @@ function applyFilters() {
 }
 
 function getFilteredPlacements() {
-  const month = document.getElementById('filterMonth').value;
   const site = document.getElementById('filterSite').value;
   const region = document.getElementById('filterRegion').value;
 
-  let data = TOP_PLACEMENTS;
-  if (site !== 'all') data = data.filter(p => p.site === site);
-  if (region !== 'all') data = data.filter(p => p.region === region);
+  let data = [...TOP_PLACEMENTS];
+
+  // Drill-down filters take priority
+  if (drillState.publisher) data = data.filter(p => p.site === drillState.publisher);
+  else if (site !== 'all') data = data.filter(p => p.site === site);
+
+  if (drillState.region) data = data.filter(p => p.region === drillState.region);
+  else if (region !== 'all') data = data.filter(p => p.region === region);
+
+  if (drillState.targeting) data = data.filter(p => p.targeting === drillState.targeting);
+
+  // Apply sorting
+  if (sortColumn) {
+    data.sort((a, b) => {
+      let va = a[sortColumn], vb = b[sortColumn];
+      if (typeof va === 'string') return sortDir * va.localeCompare(vb);
+      return sortDir * (va - vb);
+    });
+  }
+
   return data;
+}
+
+// ============================================================
+// DRILL-DOWN UI
+// ============================================================
+function renderDrillNav() {
+  const backBtn = document.getElementById('drillBackBtn');
+  const backLabel = document.getElementById('drillBackLabel');
+  const hasFilters = drillState.publisher || drillState.region || drillState.targeting;
+
+  if (hasFilters) {
+    backBtn.style.display = 'inline-flex';
+    if (drillState.targeting) backLabel.textContent = drillState.region || (drillState.publisher ? DISPLAY_NAMES[drillState.publisher] || drillState.publisher : 'All Publishers');
+    else if (drillState.region) backLabel.textContent = drillState.publisher ? DISPLAY_NAMES[drillState.publisher] || drillState.publisher : 'All Publishers';
+    else backLabel.textContent = 'All Publishers';
+  } else {
+    backBtn.style.display = 'none';
+  }
+
+  // Filter chips
+  const container = document.getElementById('activeFilters');
+  _filterChipActions = [];
+  const chips = [];
+
+  if (drillState.publisher) {
+    const name = DISPLAY_NAMES[drillState.publisher] || drillState.publisher;
+    const idx = chips.length;
+    chips.push(`<span class="filter-chip">Publisher: ${name}<button onclick="clearFilterChip(${idx})">×</button></span>`);
+    _filterChipActions.push(() => { drillState.publisher = null; drillState.region = null; drillState.targeting = null; currentPage = 1; renderPlacementsView(); });
+  }
+  if (drillState.region) {
+    const idx = chips.length;
+    chips.push(`<span class="filter-chip">Region: ${drillState.region}<button onclick="clearFilterChip(${idx})">×</button></span>`);
+    _filterChipActions.push(() => { drillState.region = null; drillState.targeting = null; currentPage = 1; renderPlacementsView(); });
+  }
+  if (drillState.targeting) {
+    const idx = chips.length;
+    chips.push(`<span class="filter-chip">Targeting: ${drillState.targeting}<button onclick="clearFilterChip(${idx})">×</button></span>`);
+    _filterChipActions.push(() => { drillState.targeting = null; currentPage = 1; renderPlacementsView(); });
+  }
+
+  if (chips.length > 0) {
+    container.innerHTML = chips.join('') + '<button class="filter-clear-all" onclick="clearDrill()">Clear all</button>';
+  } else {
+    container.innerHTML = '';
+  }
 }
 
 // ============================================================
 // VIEW 1: PLACEMENTS & SITES
 // ============================================================
 function renderPlacementsView() {
+  renderDrillNav();
   renderPlacementKPIs();
+  renderPublisherSummaryCards();
   renderImpByPublisherChart('impressions');
   renderPublisherShareChart();
   renderRegionPerfChart();
@@ -151,47 +277,127 @@ function renderPlacementsView() {
 }
 
 function renderPlacementKPIs() {
-  const sites = Object.keys(SITE_TOTALS);
-  const totalImps = sites.reduce((s, k) => s + SITE_TOTALS[k].impressions, 0);
-  const totalClicks = sites.reduce((s, k) => s + SITE_TOTALS[k].clicks, 0);
-  const avgCTR = totalClicks / totalImps * 100;
-  const numPlacements = TOP_PLACEMENTS.length;
-  const monthsActive = MONTHS.length;
+  let data, subtitle;
+  if (drillState.publisher) {
+    const placements = getFilteredPlacements();
+    const totalImps = placements.reduce((s, p) => s + p.impressions, 0);
+    const totalClicks = placements.reduce((s, p) => s + p.clicks, 0);
+    const avgCTR = totalImps > 0 ? totalClicks / totalImps * 100 : 0;
+    const name = DISPLAY_NAMES[drillState.publisher] || drillState.publisher;
+    const regions = [...new Set(placements.map(p => p.region))];
+    const formats = [...new Set(placements.map(p => p.format))];
 
-  document.getElementById('placement-kpis').innerHTML = `
-    <div class="kpi-card highlight">
-      <div class="kpi-label">Total Impressions</div>
-      <div class="kpi-value gold">${fmt(totalImps)}</div>
-      <div class="kpi-subtitle">${fmtFull(totalImps)} delivered</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Total Clicks</div>
-      <div class="kpi-value">${fmt(totalClicks)}</div>
-      <div class="kpi-subtitle">${fmtFull(totalClicks)} total</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Overall CTR</div>
-      <div class="kpi-value">${fmtPct(avgCTR)}</div>
-      <div class="kpi-subtitle">Across all publishers</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Active Publishers</div>
-      <div class="kpi-value">${sites.length}</div>
-      <div class="kpi-subtitle">FT, WSJ, Economist + 2</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Campaign Period</div>
-      <div class="kpi-value">${monthsActive}</div>
-      <div class="kpi-subtitle">Months (Jan '25 - Feb '26)</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Top Placements</div>
-      <div class="kpi-value">${numPlacements}+</div>
-      <div class="kpi-subtitle">Active placement lines</div>
-    </div>
-  `;
+    document.getElementById('placement-kpis').innerHTML = `
+      <div class="kpi-card highlight">
+        <div class="kpi-label">${name} Impressions</div>
+        <div class="kpi-value gold">${fmt(totalImps)}</div>
+        <div class="kpi-subtitle">${fmtFull(totalImps)} delivered</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">${name} Clicks</div>
+        <div class="kpi-value">${fmt(totalClicks)}</div>
+        <div class="kpi-subtitle">${fmtFull(totalClicks)} total</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">CTR</div>
+        <div class="kpi-value">${fmtPct(avgCTR)}</div>
+        <div class="kpi-subtitle">${name} average</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Placements</div>
+        <div class="kpi-value">${placements.length}</div>
+        <div class="kpi-subtitle">Active lines${drillState.region ? ' in ' + drillState.region : ''}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Regions</div>
+        <div class="kpi-value">${regions.length}</div>
+        <div class="kpi-subtitle">${regions.slice(0,3).join(', ')}${regions.length > 3 ? '...' : ''}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Formats</div>
+        <div class="kpi-value">${formats.length}</div>
+        <div class="kpi-subtitle">${formats.slice(0,3).join(', ')}${formats.length > 3 ? '...' : ''}</div>
+      </div>
+    `;
+  } else {
+    const sites = Object.keys(SITE_TOTALS);
+    const totalImps = sites.reduce((s, k) => s + SITE_TOTALS[k].impressions, 0);
+    const totalClicks = sites.reduce((s, k) => s + SITE_TOTALS[k].clicks, 0);
+    const avgCTR = totalClicks / totalImps * 100;
+    const numPlacements = TOP_PLACEMENTS.length;
+    const monthsActive = MONTHS.length;
+
+    document.getElementById('placement-kpis').innerHTML = `
+      <div class="kpi-card highlight">
+        <div class="kpi-label">Total Impressions</div>
+        <div class="kpi-value gold">${fmt(totalImps)}</div>
+        <div class="kpi-subtitle">${fmtFull(totalImps)} delivered</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Clicks</div>
+        <div class="kpi-value">${fmt(totalClicks)}</div>
+        <div class="kpi-subtitle">${fmtFull(totalClicks)} total</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Overall CTR</div>
+        <div class="kpi-value">${fmtPct(avgCTR)}</div>
+        <div class="kpi-subtitle">Across all publishers</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Active Publishers</div>
+        <div class="kpi-value">${sites.length}</div>
+        <div class="kpi-subtitle">FT, WSJ, Economist + 2</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Campaign Period</div>
+        <div class="kpi-value">${monthsActive}</div>
+        <div class="kpi-subtitle">Months (Jan '25 - Feb '26)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Top Placements</div>
+        <div class="kpi-value">${numPlacements}+</div>
+        <div class="kpi-subtitle">Active placement lines</div>
+      </div>
+    `;
+  }
 }
 
+// ============================================================
+// PUBLISHER SUMMARY CARDS (clickable)
+// ============================================================
+function renderPublisherSummaryCards() {
+  const container = document.getElementById('publisherSummaryCards');
+  const sites = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
+  const totalImps = sites.reduce((s, k) => s + SITE_TOTALS[k].impressions, 0);
+
+  container.innerHTML = sites.map(site => {
+    const d = SITE_TOTALS[site];
+    const color = SITE_COLOR_MAP[site];
+    const pct = (d.impressions / totalImps * 100).toFixed(1);
+    const placementCount = TOP_PLACEMENTS.filter(p => p.site === site).length;
+    const isActive = drillState.publisher === site;
+    const name = DISPLAY_NAMES[site];
+
+    return `
+      <div class="publisher-card ${isActive ? 'active' : ''}" onclick="drillToPublisher('${site}')" style="--pub-color: ${color}; border-top-color: ${color}">
+        <div class="publisher-card-header">
+          <span class="vendor-tag ${getVendorClass(site)}">${name}</span>
+          <span class="publisher-card-pct">${pct}%</span>
+        </div>
+        <div class="publisher-card-value">${fmt(d.impressions)}</div>
+        <div class="publisher-card-row">
+          <span>${fmtFull(d.clicks)} clicks</span>
+          <span>${fmtPct(d.ctr)} CTR</span>
+        </div>
+        <div class="publisher-card-placements">${placementCount} placements</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================================
+// CHARTS - with interactive click handlers & enhanced tooltips
+// ============================================================
 function renderImpByPublisherChart(metric) {
   destroyChart('chartImpByPublisher');
   const canvas = document.getElementById('chartImpByPublisher');
@@ -201,14 +407,15 @@ function renderImpByPublisherChart(metric) {
   const dashPatterns = [[], [8, 4], [3, 3], [12, 4, 3, 4], [6, 2]];
   const datasets = sites.map((site, idx) => {
     const color = SITE_COLOR_MAP[site];
+    const isHighlighted = !drillState.publisher || drillState.publisher === site;
     return {
-      label: site === 'The Economist' ? 'Economist' : site === 'Nativo Inc.' ? 'Nativo' : site,
+      label: DISPLAY_NAMES[site],
       data: metric === 'impressions' ? SITE_MONTHLY[site] : SITE_MONTHLY_CLICKS[site],
-      backgroundColor: fillColor(color, 0.08),
-      borderColor: color,
-      borderWidth: 2.5,
+      backgroundColor: fillColor(color, isHighlighted ? 0.08 : 0.02),
+      borderColor: isHighlighted ? color : color + '30',
+      borderWidth: isHighlighted ? 2.5 : 1,
       borderDash: dashPatterns[idx] || [],
-      fill: true,
+      fill: isHighlighted,
       pointRadius: 0,
       pointHoverRadius: 6,
       pointHoverBackgroundColor: color,
@@ -228,18 +435,18 @@ function renderImpByPublisherChart(metric) {
         legend: { position: 'bottom' },
         tooltip: {
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${fmtFull(ctx.raw)} ${metric}`
+            label: (tipCtx) => {
+              const val = tipCtx.raw;
+              const monthTotal = tipCtx.chart.data.datasets.reduce((s, ds) => s + (ds.data[tipCtx.dataIndex] || 0), 0);
+              const pct = monthTotal ? (val / monthTotal * 100).toFixed(1) : '0';
+              return `${tipCtx.dataset.label}: ${fmtFull(val)} ${metric} (${pct}%)`;
+            }
           }
         }
       },
       scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { callback: v => fmt(v) }
-        },
-        x: {
-          ticks: { maxRotation: 45, font: { size: 10 } }
-        }
+        y: { beginAtZero: true, ticks: { callback: v => fmt(v) } },
+        x: { ticks: { maxRotation: 45, font: { size: 10 } } }
       }
     }
   });
@@ -255,7 +462,7 @@ function renderPublisherShareChart() {
   destroyChart('chartPublisherShare');
   const ctx = document.getElementById('chartPublisherShare').getContext('2d');
   const sites = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
-  const labels = ['Economist', 'FT', 'WSJ', 'Nativo', 'Mobkoi'];
+  const labels = sites.map(s => DISPLAY_NAMES[s]);
   const data = sites.map(s => SITE_TOTALS[s].impressions);
   const colors = sites.map(s => SITE_COLOR_MAP[s]);
 
@@ -282,12 +489,18 @@ function renderPublisherShareChart() {
         },
         tooltip: {
           callbacks: {
-            label: (ctx) => {
-              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-              const pct = (ctx.raw / total * 100).toFixed(1);
-              return `${ctx.label}: ${fmt(ctx.raw)} (${pct}%)`;
+            label: (tipCtx) => {
+              const total = tipCtx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = (tipCtx.raw / total * 100).toFixed(1);
+              return `${tipCtx.label}: ${fmtFull(tipCtx.raw)} impressions (${pct}%)`;
             }
           }
+        }
+      },
+      // Click to drill into publisher
+      onClick: (evt, elements) => {
+        if (elements.length > 0) {
+          drillToPublisher(sites[elements[0].index]);
         }
       }
     }
@@ -297,25 +510,39 @@ function renderPublisherShareChart() {
 function renderRegionPerfChart() {
   destroyChart('chartRegionPerf');
   const ctx = document.getElementById('chartRegionPerf').getContext('2d');
-  const data = REGION_DATA.slice(0, 8);
+  const chartData = REGION_DATA.slice(0, 8);
+  const totalImps = chartData.reduce((s, d) => s + d.impressions, 0);
+
+  // Mark the currently-drilled region
+  const bgColors = chartData.map(d => {
+    if (drillState.region === d.region) return COLORS.primary + 'A0';
+    return COLORS.primary + '60';
+  });
+  const borderColors = chartData.map(d => {
+    if (drillState.region === d.region) return COLORS.primary;
+    return COLORS.primary;
+  });
+
+  // Add clickable hint
+  document.getElementById('chartRegionPerf').parentElement.setAttribute('data-clickable', 'true');
 
   charts['chartRegionPerf'] = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: data.map(d => d.region),
+      labels: chartData.map(d => d.region),
       datasets: [
         {
           label: 'Impressions',
-          data: data.map(d => d.impressions),
-          backgroundColor: COLORS.primary + '60',
-          borderColor: COLORS.primary,
+          data: chartData.map(d => d.impressions),
+          backgroundColor: bgColors,
+          borderColor: borderColors,
           borderWidth: 1,
           yAxisID: 'y',
           borderRadius: 6
         },
         {
           label: 'CTR (%)',
-          data: data.map(d => d.ctr),
+          data: chartData.map(d => d.ctr),
           type: 'line',
           borderColor: COLORS.bright,
           backgroundColor: 'transparent',
@@ -332,10 +559,29 @@ function renderRegionPerfChart() {
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { position: 'bottom' } },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (tipCtx) => {
+              if (tipCtx.datasetIndex === 0) {
+                const pct = (tipCtx.raw / totalImps * 100).toFixed(1);
+                return `Impressions: ${fmtFull(tipCtx.raw)} (${pct}% of total)`;
+              }
+              return `CTR: ${tipCtx.raw.toFixed(2)}%`;
+            }
+          }
+        }
+      },
       scales: {
         y: { beginAtZero: true, ticks: { callback: v => fmt(v) }, title: { display: true, text: 'Impressions', color: '#6B6B80' } },
         y1: { position: 'right', beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' }, title: { display: true, text: 'CTR', color: '#6B6B80' }, grid: { display: false } }
+      },
+      // Click to filter by region
+      onClick: (evt, elements) => {
+        if (elements.length > 0) {
+          drillToRegion(chartData[elements[0].index].region);
+        }
       }
     }
   });
@@ -344,6 +590,16 @@ function renderRegionPerfChart() {
 function renderAudiencePerfChart() {
   destroyChart('chartAudiencePerf');
   const ctx = document.getElementById('chartAudiencePerf').getContext('2d');
+  const totalImps = TARGETING_DATA.reduce((s, d) => s + d.impressions, 0);
+
+  // Highlight active targeting
+  const bgColors = TARGETING_DATA.map((d, i) => {
+    const base = COLORS.chart[i % COLORS.chart.length];
+    return drillState.targeting === d.targeting ? base + '90' : base + '50';
+  });
+
+  // Add clickable hint
+  document.getElementById('chartAudiencePerf').parentElement.setAttribute('data-clickable', 'true');
 
   charts['chartAudiencePerf'] = new Chart(ctx, {
     type: 'bar',
@@ -353,7 +609,7 @@ function renderAudiencePerfChart() {
         {
           label: 'Impressions',
           data: TARGETING_DATA.map(d => d.impressions),
-          backgroundColor: COLORS.chart.slice(0, TARGETING_DATA.length).map(c => c + '50'),
+          backgroundColor: bgColors,
           borderColor: COLORS.chart.slice(0, TARGETING_DATA.length),
           borderWidth: 1,
           borderRadius: 6
@@ -368,18 +624,46 @@ function renderAudiencePerfChart() {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (ctx) => {
-              const d = TARGETING_DATA[ctx.dataIndex];
-              return [`Impressions: ${fmtFull(d.impressions)}`, `Clicks: ${fmtFull(d.clicks)}`, `CTR: ${fmtPct(d.ctr)}`];
+            label: (tipCtx) => {
+              const d = TARGETING_DATA[tipCtx.dataIndex];
+              const pct = (d.impressions / totalImps * 100).toFixed(1);
+              return [`Impressions: ${fmtFull(d.impressions)} (${pct}%)`, `Clicks: ${fmtFull(d.clicks)}`, `CTR: ${fmtPct(d.ctr)}`];
             }
           }
         }
       },
       scales: {
         x: { ticks: { callback: v => fmt(v) } }
+      },
+      // Click to filter by targeting
+      onClick: (evt, elements) => {
+        if (elements.length > 0) {
+          drillToTargeting(TARGETING_DATA[elements[0].index].targeting);
+        }
       }
     }
   });
+}
+
+// ============================================================
+// PLACEMENT TABLE - with proper sorting
+// ============================================================
+let sortColumn = null;
+let sortDir = 1;
+
+function sortTable(col) {
+  if (sortColumn === col) sortDir *= -1;
+  else { sortColumn = col; sortDir = 1; }
+
+  // Update header styling
+  document.querySelectorAll('#placementTable th').forEach(th => th.classList.remove('sorted'));
+  const headerIdx = ['placement','site','region','targeting','format','impressions','clicks','ctr'].indexOf(col);
+  if (headerIdx >= 0) {
+    const th = document.querySelectorAll('#placementTable th')[headerIdx];
+    if (th) th.classList.add('sorted');
+  }
+
+  renderPlacementTable();
 }
 
 function renderPlacementTable() {
@@ -392,9 +676,9 @@ function renderPlacementTable() {
   tbody.innerHTML = pageData.map(p => `
     <tr>
       <td title="${p.placement}" style="max-width:320px;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary);font-weight:500;">${p.placement}</td>
-      <td><span class="vendor-tag ${getVendorClass(p.site)}">${p.site === 'The Economist' ? 'Economist' : p.site === 'Nativo Inc.' ? 'Nativo' : p.site}</span></td>
-      <td>${p.region}</td>
-      <td>${p.targeting}</td>
+      <td><span class="vendor-tag ${getVendorClass(p.site)}" style="cursor:pointer" onclick="drillToPublisher('${p.site}')">${DISPLAY_NAMES[p.site] || p.site}</span></td>
+      <td><span style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;" onclick="drillToRegion('${p.region}')">${p.region}</span></td>
+      <td><span style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;" onclick="drillToTargeting('${p.targeting}')">${p.targeting}</span></td>
       <td>${p.format}</td>
       <td class="number">${fmtFull(p.impressions)}</td>
       <td class="number">${fmtFull(p.clicks)}</td>
@@ -407,13 +691,24 @@ function renderPlacementTable() {
     </tr>
   `).join('');
 
-  document.getElementById('placementTableInfo').textContent = `Showing ${start + 1}-${end} of ${data.length}`;
+  document.getElementById('placementTableInfo').textContent = data.length > 0
+    ? `Showing ${start + 1}\u2013${end} of ${data.length} placements`
+    : 'No placements match current filters';
 
   const totalPages = Math.ceil(data.length / PAGE_SIZE);
   const pagination = document.getElementById('placementPagination');
+  if (totalPages <= 1) {
+    pagination.innerHTML = '';
+    return;
+  }
   let paginationHTML = `<button ${currentPage <= 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">&lt;</button>`;
+  // Smart pagination: show first, last, and nearby pages
   for (let i = 1; i <= totalPages; i++) {
-    paginationHTML += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+      paginationHTML += `<button class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    } else if (i === currentPage - 2 || i === currentPage + 2) {
+      paginationHTML += `<span style="color:var(--text-muted);padding:0 4px;">...</span>`;
+    }
   }
   paginationHTML += `<button ${currentPage >= totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">&gt;</button>`;
   pagination.innerHTML = paginationHTML;
@@ -431,14 +726,6 @@ function filterPlacementTable() {
     const text = row.textContent.toLowerCase();
     row.style.display = text.includes(search) ? '' : 'none';
   });
-}
-
-let sortColumn = null;
-let sortDir = 1;
-function sortTable(col) {
-  if (sortColumn === col) sortDir *= -1;
-  else { sortColumn = col; sortDir = 1; }
-  renderPlacementTable();
 }
 
 // ============================================================
@@ -498,6 +785,7 @@ function renderThemePerfChart() {
   destroyChart('chartThemePerf');
   const ctx = document.getElementById('chartThemePerf').getContext('2d');
   const themeColors = { 'AI': '#F5C563', 'Macro': '#D4943A', 'Energy': '#FFE8A3' };
+  const totalImps = CREATIVE_THEMES.reduce((s, t) => s + t.impressions, 0);
 
   charts['chartThemePerf'] = new Chart(ctx, {
     type: 'bar',
@@ -531,7 +819,20 @@ function renderThemePerfChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom' } },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (tipCtx) => {
+              if (tipCtx.datasetIndex === 0) {
+                const pct = (tipCtx.raw / totalImps * 100).toFixed(1);
+                return `Impressions: ${fmtFull(tipCtx.raw)} (${pct}% of total)`;
+              }
+              return `CTR: ${tipCtx.raw.toFixed(2)}%`;
+            }
+          }
+        }
+      },
       scales: {
         y: { beginAtZero: true, ticks: { callback: v => fmt(v) }, title: { display: true, text: 'Impressions', color: '#6B6B80' } },
         y1: { position: 'right', beginAtZero: true, ticks: { callback: v => v + '%' }, title: { display: true, text: 'CTR %', color: '#6B6B80' }, grid: { display: false } }
@@ -571,7 +872,14 @@ function renderThemeCTRChart() {
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { position: 'bottom' } },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (tipCtx) => `${tipCtx.dataset.label}: ${tipCtx.raw !== null ? tipCtx.raw.toFixed(2) + '% CTR' : 'N/A'}`
+          }
+        }
+      },
       scales: {
         y: { beginAtZero: true, ticks: { callback: v => v.toFixed(2) + '%' }, title: { display: true, text: 'CTR %', color: '#6B6B80' } }
       }
@@ -584,13 +892,8 @@ function renderMessagingChart(metric) {
   const ctx = document.getElementById('chartMessaging').getContext('2d');
   const top20 = CREATIVE_MESSAGES.slice(0, 20);
   const sortedData = metric === 'ctr' ? [...top20].sort((a, b) => b.ctr - a.ctr) : top20;
+  const totalImps = CREATIVE_MESSAGES.reduce((s, m) => s + m.impressions, 0);
 
-  function lerpColor(a, b, t) {
-    const ar = parseInt(a.slice(1,3),16), ag = parseInt(a.slice(3,5),16), ab = parseInt(a.slice(5,7),16);
-    const br = parseInt(b.slice(1,3),16), bg = parseInt(b.slice(3,5),16), bb = parseInt(b.slice(5,7),16);
-    const r = Math.round(ar + (br-ar)*t), g = Math.round(ag + (bg-ag)*t), bl = Math.round(ab + (bb-ab)*t);
-    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${bl.toString(16).padStart(2,'0')}`;
-  }
   charts['chartMessaging'] = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -612,9 +915,10 @@ function renderMessagingChart(metric) {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (ctx) => {
-              const d = sortedData[ctx.dataIndex];
-              return [`Impressions: ${fmtFull(d.impressions)}`, `Clicks: ${fmtFull(d.clicks)}`, `CTR: ${fmtPct(d.ctr)}`];
+            label: (tipCtx) => {
+              const d = sortedData[tipCtx.dataIndex];
+              const pct = (d.impressions / totalImps * 100).toFixed(1);
+              return [`Impressions: ${fmtFull(d.impressions)} (${pct}% of total)`, `Clicks: ${fmtFull(d.clicks)}`, `CTR: ${fmtPct(d.ctr)}`];
             }
           }
         }
@@ -659,8 +963,13 @@ function renderTopBottomCreatives() {
 }
 
 function renderCreativeTable() {
-  const maxCTR = Math.max(...CREATIVE_MESSAGES.map(m => m.ctr));
-  document.getElementById('creativeTableBody').innerHTML = CREATIVE_MESSAGES.map(m => `
+  const data = CREATIVE_MESSAGES;
+  const maxCTR = Math.max(...data.map(m => m.ctr));
+  const start = (creativePage - 1) * CREATIVE_PAGE_SIZE;
+  const end = Math.min(start + CREATIVE_PAGE_SIZE, data.length);
+  const pageData = data.slice(start, end);
+
+  document.getElementById('creativeTableBody').innerHTML = pageData.map(m => `
     <tr>
       <td style="font-weight:500;color:var(--text-primary);">${m.message}</td>
       <td class="number">${fmtFull(m.impressions)}</td>
@@ -673,6 +982,23 @@ function renderCreativeTable() {
       </td>
     </tr>
   `).join('');
+
+  document.getElementById('creativeTableInfo').textContent = `Showing ${start + 1}\u2013${end} of ${data.length} creatives`;
+
+  const totalPages = Math.ceil(data.length / CREATIVE_PAGE_SIZE);
+  const pagination = document.getElementById('creativePagination');
+  if (totalPages <= 1) { pagination.innerHTML = ''; return; }
+  let html = `<button ${creativePage <= 1 ? 'disabled' : ''} onclick="changeCreativePage(${creativePage - 1})">&lt;</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="${i === creativePage ? 'active' : ''}" onclick="changeCreativePage(${i})">${i}</button>`;
+  }
+  html += `<button ${creativePage >= totalPages ? 'disabled' : ''} onclick="changeCreativePage(${creativePage + 1})">&gt;</button>`;
+  pagination.innerHTML = html;
+}
+
+function changeCreativePage(page) {
+  creativePage = page;
+  renderCreativeTable();
 }
 
 // ============================================================
@@ -812,7 +1138,7 @@ function renderFrequencyTrendChart() {
         legend: { position: 'bottom' },
         tooltip: {
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${ctx.raw ? ctx.raw.toFixed(2) + 'x frequency' : 'N/A'}`
+            label: (tipCtx) => `${tipCtx.dataset.label}: ${tipCtx.raw ? tipCtx.raw.toFixed(2) + 'x frequency' : 'N/A'}`
           }
         }
       },
@@ -909,7 +1235,6 @@ function renderPenetrationHeatmap() {
   function getHeatColor(val, max) {
     if (!val) return 'rgba(255,255,255,0.02)';
     const intensity = Math.min(val / max, 1);
-    // Gold/yellow-based gradient
     return `rgba(245, 197, 99, ${0.08 + intensity * 0.55})`;
   }
 
