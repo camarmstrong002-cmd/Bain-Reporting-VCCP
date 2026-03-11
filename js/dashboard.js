@@ -99,6 +99,15 @@ function clearDrill() {
   renderPlacementsView();
 }
 
+function clearAllFilters() {
+  drillState = { publisher: null, region: null, targeting: null };
+  document.getElementById('filterMonth').value = 'all';
+  document.getElementById('filterSite').value = 'all';
+  document.getElementById('filterRegion').value = 'all';
+  currentPage = 1;
+  renderPlacementsView();
+}
+
 function drillBack() {
   if (drillState.targeting) drillState.targeting = null;
   else if (drillState.region) drillState.region = null;
@@ -187,6 +196,55 @@ function switchView(view) {
 // ============================================================
 function applyFilters() {
   if (currentView === 'placements') renderPlacementsView();
+  else if (currentView === 'creative') renderCreativeView();
+  else if (currentView === 'sov') renderSOVView();
+}
+
+// Returns the active month filter value (or 'all')
+function getActiveMonth() {
+  return document.getElementById('filterMonth').value;
+}
+
+// Returns the active publisher filter (drillState takes priority over dropdown)
+function getActivePublisher() {
+  if (drillState.publisher) return drillState.publisher;
+  const v = document.getElementById('filterSite').value;
+  return v !== 'all' ? v : null;
+}
+
+// Returns the active region filter (drillState takes priority over dropdown)
+function getActiveRegion() {
+  if (drillState.region) return drillState.region;
+  const v = document.getElementById('filterRegion').value;
+  return v !== 'all' ? v : null;
+}
+
+// Compute per-site totals filtered by the selected month
+// When month='all', returns original SITE_TOTALS; otherwise computes from monthly arrays
+function getFilteredSiteTotals() {
+  const month = getActiveMonth();
+  if (month === 'all') return SITE_TOTALS;
+
+  const monthIdx = MONTHS.indexOf(month);
+  if (monthIdx === -1) return SITE_TOTALS;
+
+  const result = {};
+  Object.keys(SITE_TOTALS).forEach(site => {
+    const imps = (SITE_MONTHLY[site] && SITE_MONTHLY[site][monthIdx]) || 0;
+    const clicks = (SITE_MONTHLY_CLICKS[site] && SITE_MONTHLY_CLICKS[site][monthIdx]) || 0;
+    result[site] = {
+      impressions: imps,
+      clicks: clicks,
+      ctr: imps > 0 ? (clicks / imps * 100) : 0
+    };
+  });
+  return result;
+}
+
+// Get the month label for display (e.g. "Mar '25")
+function getMonthLabel(monthKey) {
+  const idx = MONTHS.indexOf(monthKey);
+  return idx >= 0 ? MONTH_LABELS[idx] : monthKey;
 }
 
 function getFilteredPlacements() {
@@ -238,17 +296,42 @@ function renderDrillNav() {
   _filterChipActions = [];
   const chips = [];
 
+  // Month filter chip
+  const month = getActiveMonth();
+  if (month !== 'all') {
+    const idx = chips.length;
+    chips.push(`<span class="filter-chip">Month: ${getMonthLabel(month)}<button onclick="clearFilterChip(${idx})">×</button></span>`);
+    _filterChipActions.push(() => { document.getElementById('filterMonth').value = 'all'; currentPage = 1; renderPlacementsView(); });
+  }
+
   if (drillState.publisher) {
     const name = DISPLAY_NAMES[drillState.publisher] || drillState.publisher;
     const idx = chips.length;
     chips.push(`<span class="filter-chip">Publisher: ${name}<button onclick="clearFilterChip(${idx})">×</button></span>`);
     _filterChipActions.push(() => { drillState.publisher = null; drillState.region = null; drillState.targeting = null; currentPage = 1; renderPlacementsView(); });
+  } else {
+    const pubDropdown = document.getElementById('filterSite').value;
+    if (pubDropdown !== 'all') {
+      const name = DISPLAY_NAMES[pubDropdown] || pubDropdown;
+      const idx = chips.length;
+      chips.push(`<span class="filter-chip">Publisher: ${name}<button onclick="clearFilterChip(${idx})">×</button></span>`);
+      _filterChipActions.push(() => { document.getElementById('filterSite').value = 'all'; currentPage = 1; renderPlacementsView(); });
+    }
   }
+
   if (drillState.region) {
     const idx = chips.length;
     chips.push(`<span class="filter-chip">Region: ${drillState.region}<button onclick="clearFilterChip(${idx})">×</button></span>`);
     _filterChipActions.push(() => { drillState.region = null; drillState.targeting = null; currentPage = 1; renderPlacementsView(); });
+  } else {
+    const regDropdown = document.getElementById('filterRegion').value;
+    if (regDropdown !== 'all') {
+      const idx = chips.length;
+      chips.push(`<span class="filter-chip">Region: ${regDropdown}<button onclick="clearFilterChip(${idx})">×</button></span>`);
+      _filterChipActions.push(() => { document.getElementById('filterRegion').value = 'all'; currentPage = 1; renderPlacementsView(); });
+    }
   }
+
   if (drillState.targeting) {
     const idx = chips.length;
     chips.push(`<span class="filter-chip">Targeting: ${drillState.targeting}<button onclick="clearFilterChip(${idx})">×</button></span>`);
@@ -256,7 +339,7 @@ function renderDrillNav() {
   }
 
   if (chips.length > 0) {
-    container.innerHTML = chips.join('') + '<button class="filter-clear-all" onclick="clearDrill()">Clear all</button>';
+    container.innerHTML = chips.join('') + '<button class="filter-clear-all" onclick="clearAllFilters()">Clear all</button>';
   } else {
     container.innerHTML = '';
   }
@@ -277,21 +360,28 @@ function renderPlacementsView() {
 }
 
 function renderPlacementKPIs() {
-  let data, subtitle;
-  if (drillState.publisher) {
-    const placements = getFilteredPlacements();
-    const totalImps = placements.reduce((s, p) => s + p.impressions, 0);
-    const totalClicks = placements.reduce((s, p) => s + p.clicks, 0);
+  const filteredSites = getFilteredSiteTotals();
+  const month = getActiveMonth();
+  const activePub = getActivePublisher();
+  const monthLabel = month !== 'all' ? getMonthLabel(month) : null;
+  const placements = getFilteredPlacements();
+
+  if (activePub) {
+    // Single publisher view (drill or dropdown)
+    const siteData = filteredSites[activePub] || { impressions: 0, clicks: 0, ctr: 0 };
+    const totalImps = siteData.impressions;
+    const totalClicks = siteData.clicks;
     const avgCTR = totalImps > 0 ? totalClicks / totalImps * 100 : 0;
-    const name = DISPLAY_NAMES[drillState.publisher] || drillState.publisher;
+    const name = DISPLAY_NAMES[activePub] || activePub;
     const regions = [...new Set(placements.map(p => p.region))];
     const formats = [...new Set(placements.map(p => p.format))];
+    const periodLabel = monthLabel || 'all months';
 
     document.getElementById('placement-kpis').innerHTML = `
       <div class="kpi-card highlight">
         <div class="kpi-label">${name} Impressions</div>
         <div class="kpi-value gold">${fmt(totalImps)}</div>
-        <div class="kpi-subtitle">${fmtFull(totalImps)} delivered</div>
+        <div class="kpi-subtitle">${fmtFull(totalImps)} in ${periodLabel}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">${name} Clicks</div>
@@ -320,12 +410,29 @@ function renderPlacementKPIs() {
       </div>
     `;
   } else {
-    const sites = Object.keys(SITE_TOTALS);
-    const totalImps = sites.reduce((s, k) => s + SITE_TOTALS[k].impressions, 0);
-    const totalClicks = sites.reduce((s, k) => s + SITE_TOTALS[k].clicks, 0);
-    const avgCTR = totalClicks / totalImps * 100;
-    const numPlacements = TOP_PLACEMENTS.length;
-    const monthsActive = MONTHS.length;
+    // All publishers view, filtered by month
+    const sites = Object.keys(filteredSites);
+    const totalImps = sites.reduce((s, k) => s + filteredSites[k].impressions, 0);
+    const totalClicks = sites.reduce((s, k) => s + filteredSites[k].clicks, 0);
+    const avgCTR = totalImps > 0 ? totalClicks / totalImps * 100 : 0;
+    const numPlacements = placements.length;
+
+    // Count active publishers (those with impressions in the period)
+    const activeSites = sites.filter(k => filteredSites[k].impressions > 0);
+    const activeSiteNames = activeSites.map(s => DISPLAY_NAMES[s] || s);
+    const pubSubtitle = activeSiteNames.length <= 3
+      ? activeSiteNames.join(', ')
+      : activeSiteNames.slice(0, 2).join(', ') + ' + ' + (activeSiteNames.length - 2);
+
+    // Period info
+    let periodLabel, monthsActive;
+    if (month !== 'all') {
+      periodLabel = monthLabel;
+      monthsActive = 1;
+    } else {
+      periodLabel = "Jan '25 - Feb '26";
+      monthsActive = MONTHS.length;
+    }
 
     document.getElementById('placement-kpis').innerHTML = `
       <div class="kpi-card highlight">
@@ -341,17 +448,17 @@ function renderPlacementKPIs() {
       <div class="kpi-card">
         <div class="kpi-label">Overall CTR</div>
         <div class="kpi-value">${fmtPct(avgCTR)}</div>
-        <div class="kpi-subtitle">Across all publishers</div>
+        <div class="kpi-subtitle">${monthLabel ? monthLabel + ' average' : 'Across all publishers'}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Active Publishers</div>
-        <div class="kpi-value">${sites.length}</div>
-        <div class="kpi-subtitle">FT, WSJ, Economist + 2</div>
+        <div class="kpi-value">${activeSites.length}</div>
+        <div class="kpi-subtitle">${pubSubtitle}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Campaign Period</div>
         <div class="kpi-value">${monthsActive}</div>
-        <div class="kpi-subtitle">Months (Jan '25 - Feb '26)</div>
+        <div class="kpi-subtitle">${monthsActive === 1 ? periodLabel : 'Months (' + periodLabel + ')'}</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Top Placements</div>
@@ -367,16 +474,19 @@ function renderPlacementKPIs() {
 // ============================================================
 function renderPublisherSummaryCards() {
   const container = document.getElementById('publisherSummaryCards');
+  const filteredSites = getFilteredSiteTotals();
+  const activePub = getActivePublisher();
   const sites = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
-  const totalImps = sites.reduce((s, k) => s + SITE_TOTALS[k].impressions, 0);
+  const totalImps = sites.reduce((s, k) => s + filteredSites[k].impressions, 0);
 
   container.innerHTML = sites.map(site => {
-    const d = SITE_TOTALS[site];
+    const d = filteredSites[site];
     const color = SITE_COLOR_MAP[site];
-    const pct = (d.impressions / totalImps * 100).toFixed(1);
+    const pct = totalImps > 0 ? (d.impressions / totalImps * 100).toFixed(1) : '0.0';
     const placementCount = TOP_PLACEMENTS.filter(p => p.site === site).length;
-    const isActive = drillState.publisher === site;
+    const isActive = activePub === site;
     const name = DISPLAY_NAMES[site];
+    const ctr = d.impressions > 0 ? (d.clicks / d.impressions * 100) : 0;
 
     return `
       <div class="publisher-card ${isActive ? 'active' : ''}" onclick="drillToPublisher('${site}')" style="--pub-color: ${color}; border-top-color: ${color}">
@@ -387,7 +497,7 @@ function renderPublisherSummaryCards() {
         <div class="publisher-card-value">${fmt(d.impressions)}</div>
         <div class="publisher-card-row">
           <span>${fmtFull(d.clicks)} clicks</span>
-          <span>${fmtPct(d.ctr)} CTR</span>
+          <span>${fmtPct(ctr)} CTR</span>
         </div>
         <div class="publisher-card-placements">${placementCount} placements</div>
       </div>
@@ -461,9 +571,10 @@ function toggleImpChart(metric, btn) {
 function renderPublisherShareChart() {
   destroyChart('chartPublisherShare');
   const ctx = document.getElementById('chartPublisherShare').getContext('2d');
+  const filteredSites = getFilteredSiteTotals();
   const sites = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
   const labels = sites.map(s => DISPLAY_NAMES[s]);
-  const data = sites.map(s => SITE_TOTALS[s].impressions);
+  const data = sites.map(s => filteredSites[s].impressions);
   const colors = sites.map(s => SITE_COLOR_MAP[s]);
 
   charts['chartPublisherShare'] = new Chart(ctx, {
