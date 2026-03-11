@@ -61,6 +61,10 @@ const DISPLAY_NAMES = {
   'Mobkoi': 'Mobkoi'
 };
 
+// Core publishers shown in overview; Nativo & Mobkoi only accessible via filters
+const CORE_SITES = ['The Economist', 'FT', 'WSJ'];
+const ALL_SITES = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
+
 let charts = {};
 let currentView = 'placements';
 let currentPage = 1;
@@ -293,6 +297,10 @@ function getFilteredPlacements() {
   // Drill-down filters take priority
   if (drillState.publisher) data = data.filter(p => p.site === drillState.publisher);
   else if (site !== 'all') data = data.filter(p => p.site === site);
+  else {
+    // In overview (no publisher selected), only show core publishers
+    data = data.filter(p => CORE_SITES.includes(p.site));
+  }
 
   if (drillState.region) data = data.filter(p => p.region === drillState.region);
   else if (region !== 'all') data = data.filter(p => p.region === region);
@@ -447,15 +455,15 @@ function renderPlacementKPIs() {
       </div>
     `;
   } else {
-    // All publishers view, filtered by month
-    const sites = Object.keys(filteredSites);
-    const totalImps = sites.reduce((s, k) => s + filteredSites[k].impressions, 0);
-    const totalClicks = sites.reduce((s, k) => s + filteredSites[k].clicks, 0);
+    // All publishers view, filtered by month — only core sites in overview
+    const sites = CORE_SITES;
+    const totalImps = sites.reduce((s, k) => s + (filteredSites[k] ? filteredSites[k].impressions : 0), 0);
+    const totalClicks = sites.reduce((s, k) => s + (filteredSites[k] ? filteredSites[k].clicks : 0), 0);
     const avgCTR = totalImps > 0 ? totalClicks / totalImps * 100 : 0;
     const numPlacements = placements.length;
 
     // Count active publishers (those with impressions in the period)
-    const activeSites = sites.filter(k => filteredSites[k].impressions > 0);
+    const activeSites = sites.filter(k => filteredSites[k] && filteredSites[k].impressions > 0);
     const activeSiteNames = activeSites.map(s => DISPLAY_NAMES[s] || s);
     const pubSubtitle = activeSiteNames.length <= 3
       ? activeSiteNames.join(', ')
@@ -513,7 +521,10 @@ function renderPublisherSummaryCards() {
   const container = document.getElementById('publisherSummaryCards');
   const filteredSites = getFilteredSiteTotals();
   const activePub = getActivePublisher();
-  const sites = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
+  // Show core sites in overview; if a non-core publisher is drilled, include it
+  const sites = activePub && !CORE_SITES.includes(activePub)
+    ? [...CORE_SITES, activePub]
+    : CORE_SITES;
   const totalImps = sites.reduce((s, k) => s + filteredSites[k].impressions, 0);
 
   container.innerHTML = sites.map(site => {
@@ -549,7 +560,10 @@ function renderImpByPublisherChart(metric) {
   destroyChart('chartImpByPublisher');
   const canvas = document.getElementById('chartImpByPublisher');
   const ctx = canvas.getContext('2d');
-  const sites = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
+  const activePub = getActivePublisher();
+  const sites = activePub && !CORE_SITES.includes(activePub)
+    ? [...CORE_SITES, activePub]
+    : CORE_SITES;
 
   const dashPatterns = [[], [8, 4], [3, 3], [12, 4, 3, 4], [6, 2]];
   const datasets = sites.map((site, idx) => {
@@ -609,7 +623,10 @@ function renderPublisherShareChart() {
   destroyChart('chartPublisherShare');
   const ctx = document.getElementById('chartPublisherShare').getContext('2d');
   const filteredSites = getFilteredSiteTotals();
-  const sites = ['The Economist', 'FT', 'WSJ', 'Nativo Inc.', 'Mobkoi'];
+  const activePub = getActivePublisher();
+  const sites = activePub && !CORE_SITES.includes(activePub)
+    ? [...CORE_SITES, activePub]
+    : CORE_SITES;
   const labels = sites.map(s => DISPLAY_NAMES[s]);
   const data = sites.map(s => filteredSites[s].impressions);
   const colors = sites.map(s => SITE_COLOR_MAP[s]);
