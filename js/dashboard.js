@@ -250,8 +250,45 @@ function getMonthLabel(monthKey) {
 function getFilteredPlacements() {
   const site = document.getElementById('filterSite').value;
   const region = document.getElementById('filterRegion').value;
+  const month = getActiveMonth();
 
   let data = [...TOP_PLACEMENTS];
+
+  // When a specific month is selected, scale placement data proportionally
+  // so totals match the monthly KPI figures
+  if (month !== 'all') {
+    const monthIdx = MONTHS.indexOf(month);
+    if (monthIdx >= 0) {
+      // Build ratio per site: monthly impressions / total impressions
+      const siteRatios = {};
+      const siteClickRatios = {};
+      Object.keys(SITE_TOTALS).forEach(s => {
+        const totalImps = SITE_TOTALS[s].impressions;
+        const monthImps = (SITE_MONTHLY[s] && SITE_MONTHLY[s][monthIdx]) || 0;
+        siteRatios[s] = totalImps > 0 ? monthImps / totalImps : 0;
+
+        const totalClicks = SITE_TOTALS[s].clicks;
+        const monthClicks = (SITE_MONTHLY_CLICKS[s] && SITE_MONTHLY_CLICKS[s][monthIdx]) || 0;
+        siteClickRatios[s] = totalClicks > 0 ? monthClicks / totalClicks : 0;
+      });
+
+      data = data.map(p => {
+        const impRatio = siteRatios[p.site] || 0;
+        const clickRatio = siteClickRatios[p.site] || 0;
+        const scaledImps = Math.round(p.impressions * impRatio);
+        const scaledClicks = Math.round(p.clicks * clickRatio);
+        return {
+          ...p,
+          impressions: scaledImps,
+          clicks: scaledClicks,
+          ctr: scaledImps > 0 ? (scaledClicks / scaledImps * 100) : 0
+        };
+      });
+
+      // Remove placements with zero impressions in this month
+      data = data.filter(p => p.impressions > 0);
+    }
+  }
 
   // Drill-down filters take priority
   if (drillState.publisher) data = data.filter(p => p.site === drillState.publisher);
