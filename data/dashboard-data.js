@@ -1878,6 +1878,15 @@ const FREQ_DETAIL = [
   }
 ];
 
+// EMEA Tier Country Reference
+const EMEA_TIER_COUNTRIES = {
+  "EMEA Tier 1": ["United Kingdom", "Germany", "France", "Switzerland", "Netherlands", "Sweden", "Denmark", "Norway", "Belgium", "Austria", "Ireland", "Luxembourg", "Finland"],
+  "EMEA Tier 2": ["Italy", "Spain", "Portugal", "Poland", "Czech Republic", "Greece", "Hungary", "Romania", "Turkey", "South Africa", "UAE", "Saudi Arabia", "Israel", "Egypt", "Nigeria", "Kenya"]
+};
+
+// Creative Gallery Placeholder (awaiting creative assets from client)
+const CREATIVE_GALLERY = [];
+
 // 2026 Media Plan
 const PLAN_2026 = {
   "WSJ": {

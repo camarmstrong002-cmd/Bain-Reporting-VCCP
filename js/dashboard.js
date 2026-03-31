@@ -196,6 +196,44 @@ function switchView(view) {
 }
 
 // ============================================================
+// CAMPAIGN YEAR FILTER
+// ============================================================
+function applyYearFilter() {
+  const year = document.getElementById('filterYear').value;
+  const monthSelect = document.getElementById('filterMonth');
+  const options = monthSelect.querySelectorAll('option');
+
+  options.forEach(opt => {
+    if (opt.value === 'all') {
+      opt.style.display = '';
+      return;
+    }
+    if (year === 'all') {
+      opt.style.display = '';
+    } else {
+      opt.style.display = opt.value.startsWith(year) ? '' : 'none';
+    }
+  });
+
+  // If current month selection is hidden by year filter, reset to 'all'
+  const currentMonth = monthSelect.value;
+  if (currentMonth !== 'all' && !currentMonth.startsWith(year) && year !== 'all') {
+    monthSelect.value = 'all';
+  }
+
+  applyFilters();
+}
+
+// ============================================================
+// EMEA TIER REFERENCE
+// ============================================================
+function toggleEMEARef() {
+  const panel = document.getElementById('emeaRefPanel');
+  if (!panel) return;
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+// ============================================================
 // FILTERS
 // ============================================================
 function applyFilters() {
@@ -896,6 +934,113 @@ function filterPlacementTable() {
 // ============================================================
 // VIEW 2: CREATIVE INSIGHTS
 // ============================================================
+
+// Extract theme from placement name
+function extractTheme(name) {
+  if (name.includes('_AI_') || name.includes('_AI ') || name.includes('AI &')) return 'AI';
+  if (name.includes('_Macro_') || name.includes('_Macro ')) return 'Macro';
+  if (name.includes('_Energy_') || name.includes('_Energy ')) return 'Energy';
+  return null;
+}
+
+// Extract creative message from placement name by matching known messages
+const KNOWN_MESSAGES = CREATIVE_MESSAGES.map(m => m.message);
+function extractMessage(name) {
+  for (const msg of KNOWN_MESSAGES) {
+    if (name.includes(msg) || name.toLowerCase().includes(msg.toLowerCase())) return msg;
+  }
+  // Try partial matches for common patterns
+  if (name.includes('STtariff')) return 'TariffUncertainty';
+  if (name.includes('TarrifsNextChapter')) return 'SeizeV2';
+  if (name.includes('TarrifsPhase1')) return 'TariffActions';
+  if (name.includes('BoardsPhase1')) return 'AiResults';
+  if (name.includes('AgendaPhase1')) return 'Resources';
+  if (name.includes('UnstickingYourAITransformation')) return 'UnstickTransformation';
+  return null;
+}
+
+// Get filtered creative data derived from placements
+function getFilteredCreativeData() {
+  const month = getActiveMonth();
+  const pubFilter = document.getElementById('filterSite').value;
+  const regionFilter = document.getElementById('filterRegion').value;
+  const hasFilter = month !== 'all' || pubFilter !== 'all' || regionFilter !== 'all';
+
+  if (!hasFilter) {
+    return { themes: CREATIVE_THEMES, messages: CREATIVE_MESSAGES, filtered: false };
+  }
+
+  // Get filtered placements (uses existing filter logic)
+  let placements = [...TOP_PLACEMENTS];
+
+  // Apply month scaling
+  if (month !== 'all') {
+    const monthIdx = MONTHS.indexOf(month);
+    if (monthIdx >= 0) {
+      const siteRatios = {};
+      const siteClickRatios = {};
+      Object.keys(SITE_TOTALS).forEach(s => {
+        const totalImps = SITE_TOTALS[s].impressions;
+        const monthImps = (SITE_MONTHLY[s] && SITE_MONTHLY[s][monthIdx]) || 0;
+        siteRatios[s] = totalImps > 0 ? monthImps / totalImps : 0;
+        const totalClicks = SITE_TOTALS[s].clicks;
+        const monthClicks = (SITE_MONTHLY_CLICKS[s] && SITE_MONTHLY_CLICKS[s][monthIdx]) || 0;
+        siteClickRatios[s] = totalClicks > 0 ? monthClicks / totalClicks : 0;
+      });
+      placements = placements.map(p => {
+        const impRatio = siteRatios[p.site] || 0;
+        const clickRatio = siteClickRatios[p.site] || 0;
+        const scaledImps = Math.round(p.impressions * impRatio);
+        const scaledClicks = Math.round(p.clicks * clickRatio);
+        return { ...p, impressions: scaledImps, clicks: scaledClicks, ctr: scaledImps > 0 ? (scaledClicks / scaledImps * 100) : 0 };
+      }).filter(p => p.impressions > 0);
+    }
+  }
+
+  // Apply publisher filter
+  if (pubFilter !== 'all') {
+    placements = placements.filter(p => p.site === pubFilter);
+  }
+
+  // Apply region filter
+  if (regionFilter !== 'all') {
+    placements = placements.filter(p => p.region === regionFilter);
+  }
+
+  // Extract themes and messages from filtered placements
+  const themeMap = {};
+  const messageMap = {};
+
+  placements.forEach(p => {
+    const theme = extractTheme(p.placement);
+    const msg = extractMessage(p.placement);
+
+    if (theme) {
+      if (!themeMap[theme]) themeMap[theme] = { theme, impressions: 0, clicks: 0 };
+      themeMap[theme].impressions += p.impressions;
+      themeMap[theme].clicks += p.clicks;
+    }
+
+    if (msg) {
+      if (!messageMap[msg]) messageMap[msg] = { message: msg, impressions: 0, clicks: 0 };
+      messageMap[msg].impressions += p.impressions;
+      messageMap[msg].clicks += p.clicks;
+    }
+  });
+
+  const themes = Object.values(themeMap).map(t => ({
+    ...t,
+    ctr: t.impressions > 0 ? (t.clicks / t.impressions * 100) : 0
+  })).sort((a, b) => b.impressions - a.impressions);
+
+  const messages = Object.values(messageMap).map(m => ({
+    ...m,
+    ctr: m.impressions > 0 ? (m.clicks / m.impressions * 100) : 0
+  })).sort((a, b) => b.impressions - a.impressions);
+
+  return { themes, messages, filtered: true };
+}
+
 function renderCreativeView() {
   renderCreativeKPIs();
   renderThemePerfChart();
@@ -903,20 +1048,35 @@ function renderCreativeView() {
   renderMessagingChart('impressions');
   renderTopBottomCreatives();
   renderCreativeTable();
+  renderCreativeGallery();
 }
 
 function renderCreativeKPIs() {
-  const totalImps = CREATIVE_THEMES.reduce((s, t) => s + t.impressions, 0);
-  const totalClicks = CREATIVE_THEMES.reduce((s, t) => s + t.clicks, 0);
-  const avgCTR = totalClicks / totalImps * 100;
-  const topMsg = CREATIVE_MESSAGES.reduce((best, m) => m.ctr > best.ctr ? m : best, CREATIVE_MESSAGES[0]);
-  const numMessages = CREATIVE_MESSAGES.length;
+  const { themes, messages, filtered } = getFilteredCreativeData();
+
+  if (themes.length === 0 && filtered) {
+    document.getElementById('creative-kpis').innerHTML = `
+      <div class="kpi-card" style="grid-column: 1 / -1; text-align:center;">
+        <div class="kpi-label">No creative data available for the selected filters</div>
+        <div class="kpi-subtitle">Try adjusting or clearing the filters</div>
+      </div>`;
+    return;
+  }
+
+  const totalImps = themes.reduce((s, t) => s + t.impressions, 0);
+  const totalClicks = themes.reduce((s, t) => s + t.clicks, 0);
+  const avgCTR = totalImps > 0 ? totalClicks / totalImps * 100 : 0;
+  const topMsg = messages.length > 0 ? messages.reduce((best, m) => m.ctr > best.ctr ? m : best, messages[0]) : null;
+  const numMessages = messages.length;
+  const bestTheme = themes.reduce((best, t) => t.ctr > best.ctr ? t : best, themes[0]);
+  const highestVol = themes.reduce((best, t) => t.impressions > best.impressions ? t : best, themes[0]);
+  const filterNote = filtered ? '<div style="font-size:10px;color:var(--text-muted);margin-top:4px;">Filtered view</div>' : '';
 
   document.getElementById('creative-kpis').innerHTML = `
     <div class="kpi-card highlight">
       <div class="kpi-label">Creative Impressions</div>
       <div class="kpi-value gold">${fmt(totalImps)}</div>
-      <div class="kpi-subtitle">Across ${CREATIVE_THEMES.length} themes</div>
+      <div class="kpi-subtitle">Across ${themes.length} themes${filterNote}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Creative Clicks</div>
@@ -925,23 +1085,23 @@ function renderCreativeKPIs() {
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Top Performing</div>
-      <div class="kpi-value" style="font-size:18px">${topMsg.message}</div>
-      <div class="kpi-subtitle">${fmtPct(topMsg.ctr)} CTR</div>
+      <div class="kpi-value" style="font-size:18px">${topMsg ? topMsg.message : 'N/A'}</div>
+      <div class="kpi-subtitle">${topMsg ? fmtPct(topMsg.ctr) + ' CTR' : ''}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Active Creatives</div>
       <div class="kpi-value">${numMessages}</div>
-      <div class="kpi-subtitle">Message variants running</div>
+      <div class="kpi-subtitle">Message variants${filtered ? ' (filtered)' : ' running'}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Best Theme CTR</div>
-      <div class="kpi-value">${CREATIVE_THEMES.reduce((best, t) => t.ctr > best.ctr ? t : best, CREATIVE_THEMES[0]).theme}</div>
-      <div class="kpi-subtitle">${fmtPct(CREATIVE_THEMES.reduce((best, t) => t.ctr > best.ctr ? t : best, CREATIVE_THEMES[0]).ctr)} CTR</div>
+      <div class="kpi-value">${bestTheme.theme}</div>
+      <div class="kpi-subtitle">${fmtPct(bestTheme.ctr)} CTR</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Highest Volume</div>
-      <div class="kpi-value">${CREATIVE_THEMES.reduce((best, t) => t.impressions > best.impressions ? t : best, CREATIVE_THEMES[0]).theme}</div>
-      <div class="kpi-subtitle">${fmt(CREATIVE_THEMES.reduce((best, t) => t.impressions > best.impressions ? t : best, CREATIVE_THEMES[0]).impressions)} imps</div>
+      <div class="kpi-value">${highestVol.theme}</div>
+      <div class="kpi-subtitle">${fmt(highestVol.impressions)} imps</div>
     </div>
   `;
 }
@@ -950,18 +1110,24 @@ function renderThemePerfChart() {
   destroyChart('chartThemePerf');
   const ctx = document.getElementById('chartThemePerf').getContext('2d');
   const themeColors = { 'AI': '#F5C563', 'Macro': '#D4943A', 'Energy': '#FFE8A3' };
-  const totalImps = CREATIVE_THEMES.reduce((s, t) => s + t.impressions, 0);
+  const { themes } = getFilteredCreativeData();
+  const totalImps = themes.reduce((s, t) => s + t.impressions, 0);
+
+  if (themes.length === 0) {
+    ctx.canvas.parentElement.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;">No theme data for selected filters</div>';
+    return;
+  }
 
   charts['chartThemePerf'] = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: CREATIVE_THEMES.map(t => t.theme),
+      labels: themes.map(t => t.theme),
       datasets: [
         {
           label: 'Impressions',
-          data: CREATIVE_THEMES.map(t => t.impressions),
-          backgroundColor: CREATIVE_THEMES.map(t => (themeColors[t.theme] || COLORS.primary) + '50'),
-          borderColor: CREATIVE_THEMES.map(t => themeColors[t.theme] || COLORS.primary),
+          data: themes.map(t => t.impressions),
+          backgroundColor: themes.map(t => (themeColors[t.theme] || COLORS.primary) + '50'),
+          borderColor: themes.map(t => themeColors[t.theme] || COLORS.primary),
           borderWidth: 1,
           yAxisID: 'y',
           borderRadius: 6
@@ -969,7 +1135,7 @@ function renderThemePerfChart() {
         {
           label: 'CTR (%)',
           type: 'line',
-          data: CREATIVE_THEMES.map(t => t.ctr),
+          data: themes.map(t => t.ctr),
           borderColor: '#F1F1F4',
           backgroundColor: 'transparent',
           borderWidth: 2.5,
@@ -990,7 +1156,7 @@ function renderThemePerfChart() {
           callbacks: {
             label: (tipCtx) => {
               if (tipCtx.datasetIndex === 0) {
-                const pct = (tipCtx.raw / totalImps * 100).toFixed(1);
+                const pct = totalImps > 0 ? (tipCtx.raw / totalImps * 100).toFixed(1) : '0';
                 return `Impressions: ${fmtFull(tipCtx.raw)} (${pct}% of total)`;
               }
               return `CTR: ${tipCtx.raw.toFixed(2)}%`;
@@ -1055,9 +1221,15 @@ function renderThemeCTRChart() {
 function renderMessagingChart(metric) {
   destroyChart('chartMessaging');
   const ctx = document.getElementById('chartMessaging').getContext('2d');
-  const top20 = CREATIVE_MESSAGES.slice(0, 20);
+  const { messages } = getFilteredCreativeData();
+  const top20 = messages.slice(0, 20);
   const sortedData = metric === 'ctr' ? [...top20].sort((a, b) => b.ctr - a.ctr) : top20;
-  const totalImps = CREATIVE_MESSAGES.reduce((s, m) => s + m.impressions, 0);
+  const totalImps = messages.reduce((s, m) => s + m.impressions, 0);
+
+  if (top20.length === 0) {
+    ctx.canvas.parentElement.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:13px;">No messaging data for selected filters</div>';
+    return;
+  }
 
   charts['chartMessaging'] = new Chart(ctx, {
     type: 'bar',
@@ -1103,7 +1275,9 @@ function toggleMsgChart(metric, btn) {
 }
 
 function renderTopBottomCreatives() {
-  const sorted = [...CREATIVE_MESSAGES].filter(m => m.impressions > 50000).sort((a, b) => b.ctr - a.ctr);
+  const { messages } = getFilteredCreativeData();
+  const minImps = messages.some(m => m.impressions > 50000) ? 50000 : 0;
+  const sorted = [...messages].filter(m => m.impressions > minImps).sort((a, b) => b.ctr - a.ctr);
   const top5 = sorted.slice(0, 6);
   const bottom5 = sorted.slice(-6).reverse();
 
@@ -1128,7 +1302,8 @@ function renderTopBottomCreatives() {
 }
 
 function renderCreativeTable() {
-  const data = CREATIVE_MESSAGES;
+  const { messages } = getFilteredCreativeData();
+  const data = messages;
   const maxCTR = Math.max(...data.map(m => m.ctr));
   const start = (creativePage - 1) * CREATIVE_PAGE_SIZE;
   const end = Math.min(start + CREATIVE_PAGE_SIZE, data.length);
@@ -1167,9 +1342,68 @@ function changeCreativePage(page) {
 }
 
 // ============================================================
+// CREATIVE GALLERY (placeholder - awaiting assets from client)
+// ============================================================
+function renderCreativeGallery() {
+  const container = document.getElementById('creativeGallery');
+  if (!container) return;
+  if (typeof CREATIVE_GALLERY !== 'undefined' && CREATIVE_GALLERY.length > 0) {
+    container.innerHTML = CREATIVE_GALLERY.map(c => `
+      <div class="creative-gallery-card">
+        <div class="creative-gallery-img" style="background-image:url('${c.imagePath}')"></div>
+        <div class="creative-gallery-info">
+          <div class="creative-gallery-name">${c.message}</div>
+          <div class="creative-gallery-meta">${c.theme} &middot; ${c.format}</div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    container.innerHTML = `
+      <div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px;border:1px dashed var(--border-subtle);border-radius:12px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px;margin:0 auto 12px;display:block;opacity:0.4;"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        Creative visual reference coming soon.<br>
+        <span style="font-size:11px;color:var(--text-muted);opacity:0.7;">Assets to be provided by Bain team</span>
+      </div>
+    `;
+  }
+}
+
+// ============================================================
 // VIEW 3: SHARE OF VOICE
 // ============================================================
+
+// SOV month key mapping: '2025-03' -> 'Mar', etc
+const SOV_MONTH_MAP = {
+  '2025-02': 'Feb', '2025-03': 'Mar', '2025-04': 'Apr', '2025-05': 'May',
+  '2025-06': 'Jun', '2025-07': 'Jul', '2025-08': 'Aug', '2025-09': 'Sep',
+  '2025-10': 'Oct', '2025-11': 'Nov', '2025-12': 'Dec'
+};
+
+// Map publisher filter values to SOV publisher keys
+const SOV_PUB_MAP = {
+  'The Economist': 'Economist',
+  'FT': 'FT',
+  'WSJ': 'WSJ'
+};
+
+function getSOVFilteredPublishers() {
+  const pubFilter = document.getElementById('filterSite').value;
+  if (pubFilter !== 'all') {
+    const sovKey = SOV_PUB_MAP[pubFilter];
+    if (sovKey && SOV_FREQUENCY[sovKey]) return [sovKey];
+    return []; // Non-SOV publisher selected (e.g. Nativo, Mobkoi)
+  }
+  return Object.keys(SOV_FREQUENCY);
+}
+
+function getSOVFilteredMonth() {
+  const month = getActiveMonth();
+  if (month === 'all') return null;
+  return SOV_MONTH_MAP[month] || null;
+}
+
 function renderSOVView() {
+  renderSOVFilterNote();
   renderSOVKPIs();
   renderSOVVendorCards();
   renderFrequencyTrendChart();
@@ -1178,39 +1412,91 @@ function renderSOVView() {
   renderPenetrationHeatmap();
 }
 
+function renderSOVFilterNote() {
+  let noteEl = document.getElementById('sovFilterNote');
+  if (!noteEl) {
+    const sovView = document.getElementById('view-sov');
+    noteEl = document.createElement('div');
+    noteEl.id = 'sovFilterNote';
+    sovView.insertBefore(noteEl, sovView.firstChild);
+  }
+
+  const regionFilter = document.getElementById('filterRegion').value;
+  const pubFilter = document.getElementById('filterSite').value;
+  const notes = [];
+
+  if (regionFilter !== 'all') {
+    notes.push('Region filter does not apply to Share of Voice data');
+  }
+  if (pubFilter === 'Nativo Inc.' || pubFilter === 'Mobkoi') {
+    notes.push(`${pubFilter} does not have Share of Voice data`);
+  }
+
+  if (notes.length > 0) {
+    noteEl.innerHTML = `<div style="padding:10px 16px;margin-bottom:16px;border-radius:10px;background:rgba(245,197,99,0.08);border:1px solid rgba(245,197,99,0.15);font-size:12px;color:#F5C563;display:flex;align-items:center;gap:8px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      ${notes.join(' &middot; ')}
+    </div>`;
+  } else {
+    noteEl.innerHTML = '';
+  }
+}
+
 function renderSOVKPIs() {
-  const publishers = Object.keys(SOV_FREQUENCY);
+  const publishers = getSOVFilteredPublishers();
+  const selectedMonth = getSOVFilteredMonth();
+
+  if (publishers.length === 0) {
+    document.getElementById('sov-kpis').innerHTML = `
+      <div class="kpi-card" style="grid-column: 1 / -1; text-align:center;">
+        <div class="kpi-label">No SOV data available for this publisher</div>
+        <div class="kpi-subtitle">SOV data is tracked for WSJ, Economist, and FT only</div>
+      </div>`;
+    return;
+  }
+
   const avgFreqs = publishers.map(p => SOV_FREQUENCY[p].avg);
   const overallAvgFreq = avgFreqs.reduce((a, b) => a + b, 0) / avgFreqs.length;
-  const totalAudSize = AUDIENCE_DEFINITIONS.reduce((s, a) => s + a.size, 0);
+
+  // Filter audience definitions by selected publishers
+  const filteredAuds = publishers.length < Object.keys(SOV_FREQUENCY).length
+    ? AUDIENCE_DEFINITIONS.filter(a => publishers.some(p => a.publisher === p || a.publisher.trim() === p))
+    : AUDIENCE_DEFINITIONS;
+  const totalAudSize = filteredAuds.reduce((s, a) => s + a.size, 0);
 
   let maxFreq = 0, maxFreqPub = '', maxFreqMonth = '';
   for (const pub of publishers) {
-    for (const [month, freq] of Object.entries(SOV_FREQUENCY[pub].monthly)) {
-      if (freq > maxFreq) { maxFreq = freq; maxFreqPub = pub; maxFreqMonth = month; }
+    const months = selectedMonth
+      ? [[selectedMonth, SOV_FREQUENCY[pub].monthly[selectedMonth]]]
+      : Object.entries(SOV_FREQUENCY[pub].monthly);
+    for (const [month, freq] of months) {
+      if (freq && freq > maxFreq) { maxFreq = freq; maxFreqPub = pub; maxFreqMonth = month; }
     }
   }
+
+  const pubLabel = publishers.length === 1 ? publishers[0] : 'all publishers';
+  const monthLabel = selectedMonth ? selectedMonth + " '25" : '';
 
   document.getElementById('sov-kpis').innerHTML = `
     <div class="kpi-card highlight">
       <div class="kpi-label">Avg Frequency</div>
       <div class="kpi-value gold">${overallAvgFreq.toFixed(1)}x</div>
-      <div class="kpi-subtitle">Across all publishers</div>
+      <div class="kpi-subtitle">${publishers.length === 1 ? publishers[0] : 'Across ' + pubLabel}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Total Audience Pool</div>
       <div class="kpi-value">${fmt(totalAudSize)}</div>
-      <div class="kpi-subtitle">${AUDIENCE_DEFINITIONS.length} audience segments</div>
+      <div class="kpi-subtitle">${filteredAuds.length} audience segments</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Publishers Tracked</div>
       <div class="kpi-value">${publishers.length}</div>
-      <div class="kpi-subtitle">WSJ, Economist, FT</div>
+      <div class="kpi-subtitle">${publishers.join(', ')}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Peak Frequency</div>
-      <div class="kpi-value">${maxFreq.toFixed(1)}x</div>
-      <div class="kpi-subtitle">${maxFreqPub} - ${maxFreqMonth}</div>
+      <div class="kpi-value">${maxFreq > 0 ? maxFreq.toFixed(1) + 'x' : 'N/A'}</div>
+      <div class="kpi-subtitle">${maxFreqPub ? maxFreqPub + ' - ' + maxFreqMonth : ''}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Highest Avg Freq</div>
@@ -1219,8 +1505,8 @@ function renderSOVKPIs() {
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Reporting Period</div>
-      <div class="kpi-value">11</div>
-      <div class="kpi-subtitle">Months of SOV data</div>
+      <div class="kpi-value">${selectedMonth ? 1 : 11}</div>
+      <div class="kpi-subtitle">${selectedMonth ? selectedMonth + " '25" : 'Months of SOV data'}</div>
     </div>
   `;
 }
@@ -1228,8 +1514,15 @@ function renderSOVKPIs() {
 function renderSOVVendorCards() {
   const container = document.getElementById('sovVendorCards');
   const pubColors = { 'WSJ': '#F5C563', 'Economist': '#D4943A', 'FT': '#FFE8A3' };
+  const filteredPubs = getSOVFilteredPublishers();
 
-  container.innerHTML = Object.entries(SOV_FREQUENCY).map(([pub, data]) => {
+  if (filteredPubs.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px;">No SOV vendor data for selected publisher</div>';
+    return;
+  }
+
+  const sovEntries = Object.entries(SOV_FREQUENCY).filter(([pub]) => filteredPubs.includes(pub));
+  container.innerHTML = sovEntries.map(([pub, data]) => {
     const months = Object.entries(data.monthly);
     const maxFreq = Math.max(...months.map(([, f]) => f));
     const minFreq = Math.min(...months.map(([, f]) => f));
@@ -1274,9 +1567,14 @@ function renderFrequencyTrendChart() {
   const ctx = canvas.getContext('2d');
   const allMonths = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const pubColors = { 'WSJ': '#F5C563', 'Economist': '#D4943A', 'FT': '#FFE8A3' };
+  const filteredPubs = getSOVFilteredPublishers();
+  const selectedMonth = getSOVFilteredMonth();
+
+  if (filteredPubs.length === 0) return;
 
   const pubDashes = { 'WSJ': [], 'Economist': [8, 4], 'FT': [3, 3] };
-  const datasets = Object.entries(SOV_FREQUENCY).map(([pub, data]) => ({
+  const sovEntries = Object.entries(SOV_FREQUENCY).filter(([pub]) => filteredPubs.includes(pub));
+  const datasets = sovEntries.map(([pub, data]) => ({
     label: pub === 'FT' ? 'Financial Times' : pub === 'WSJ' ? 'Wall Street Journal' : 'The Economist',
     data: allMonths.map(m => data.monthly[m] || null),
     borderColor: pubColors[pub],
@@ -1322,6 +1620,11 @@ function renderFrequencyTrendChart() {
 
 function renderAudienceBreakdown() {
   const container = document.getElementById('audienceBreakdown');
+  const filteredPubs = getSOVFilteredPublishers();
+  const filteredAuds = filteredPubs.length < Object.keys(SOV_FREQUENCY).length
+    ? AUDIENCE_DEFINITIONS.filter(a => filteredPubs.some(p => a.publisher === p || a.publisher.trim() === p))
+    : AUDIENCE_DEFINITIONS;
+
   container.innerHTML = `
     <table class="data-table" style="font-size:12px;">
       <thead>
@@ -1333,7 +1636,7 @@ function renderAudienceBreakdown() {
         </tr>
       </thead>
       <tbody>
-        ${AUDIENCE_DEFINITIONS.map(a => `
+        ${filteredAuds.map(a => `
           <tr>
             <td><span class="vendor-tag ${getVendorClass(a.publisher)}">${a.publisher}</span></td>
             <td style="font-weight:500;color:var(--text-primary);">${a.audience}</td>
@@ -1350,7 +1653,9 @@ function renderFreqDistChart() {
   destroyChart('chartFreqDist');
   const ctx = document.getElementById('chartFreqDist').getContext('2d');
   const pubColors = { 'WSJ': '#F5C563', 'Economist': '#D4943A', 'FT': '#FFE8A3' };
-  const pubs = Object.keys(SOV_FREQUENCY);
+  const pubs = getSOVFilteredPublishers();
+
+  if (pubs.length === 0) return;
 
   charts['chartFreqDist'] = new Chart(ctx, {
     type: 'radar',
@@ -1464,5 +1769,13 @@ window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     document.getElementById('loadingOverlay').classList.add('hidden');
     renderPlacementsView();
+
+    // Populate EMEA tier reference
+    if (typeof EMEA_TIER_COUNTRIES !== 'undefined') {
+      const t1 = document.getElementById('emeaTier1Countries');
+      const t2 = document.getElementById('emeaTier2Countries');
+      if (t1) t1.textContent = EMEA_TIER_COUNTRIES['EMEA Tier 1'].join(', ');
+      if (t2) t2.textContent = EMEA_TIER_COUNTRIES['EMEA Tier 2'].join(', ');
+    }
   }, 600);
 });

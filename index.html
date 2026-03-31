@@ -149,6 +149,15 @@ async function checkAuth(e) {
     <!-- Filters Bar -->
     <div class="filters-bar">
       <div class="filter-group">
+        <span class="filter-label">Campaign Year</span>
+        <select class="filter-select" id="filterYear" onchange="applyYearFilter()">
+          <option value="all">All Years</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+        </select>
+      </div>
+      <div class="filter-divider"></div>
+      <div class="filter-group">
         <span class="filter-label">Time Period</span>
         <select class="filter-select" id="filterMonth" onchange="applyFilters()">
           <option value="all">All Months</option>
@@ -182,7 +191,11 @@ async function checkAuth(e) {
       </div>
       <div class="filter-divider"></div>
       <div class="filter-group">
-        <span class="filter-label">Region</span>
+        <span class="filter-label">Region
+          <button onclick="toggleEMEARef()" title="EMEA Tier Reference" style="background:none;border:none;cursor:pointer;padding:0 0 0 4px;vertical-align:middle;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#C8A55C" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </button>
+        </span>
         <select class="filter-select" id="filterRegion" onchange="applyFilters()">
           <option value="all">All Regions</option>
           <option value="US">US</option>
@@ -195,6 +208,25 @@ async function checkAuth(e) {
           <option value="Global">Global</option>
         </select>
       </div>
+    </div>
+
+    <!-- EMEA Tier Reference Panel -->
+    <div id="emeaRefPanel" style="display:none;margin:0 0 16px 0;padding:16px 20px;border-radius:12px;background:var(--card-bg);border:1px solid var(--border-subtle);font-size:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-weight:700;color:var(--text-primary);font-size:13px;">EMEA Tier Country Reference</div>
+        <button onclick="toggleEMEARef()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:18px;line-height:1;">&times;</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="font-weight:600;color:#F5C563;margin-bottom:6px;">EMEA Tier 1</div>
+          <div style="color:var(--text-secondary);line-height:1.8;" id="emeaTier1Countries"></div>
+        </div>
+        <div>
+          <div style="font-weight:600;color:#D4943A;margin-bottom:6px;">EMEA Tier 2</div>
+          <div style="color:var(--text-secondary);line-height:1.8;" id="emeaTier2Countries"></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--text-muted);">Country-level performance breakdown is not currently available from the data source. Contact your media team for additional granularity.</div>
     </div>
 
     <!-- Dashboard Content -->
@@ -314,6 +346,17 @@ async function checkAuth(e) {
       <div class="dashboard-view" id="view-creative">
         <!-- KPI Cards -->
         <div class="kpi-grid" id="creative-kpis"></div>
+
+        <!-- Creative Gallery -->
+        <div class="chart-card" style="margin-bottom: var(--space-lg);">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-card-title">Creative Reference Gallery</div>
+              <div class="chart-card-subtitle">Visual reference of creative assets by message and theme</div>
+            </div>
+          </div>
+          <div class="chart-card-body" id="creativeGallery" style="min-height:80px;"></div>
+        </div>
 
         <!-- Theme Performance -->
         <div class="chart-grid chart-grid-2">
