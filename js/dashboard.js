@@ -430,7 +430,7 @@ function renderPlacementKPIs() {
       periodLabel = monthLabel;
       monthsActive = 1;
     } else {
-      periodLabel = "Jan '25 - Feb '26";
+      periodLabel = MONTH_LABELS[0] + ' - ' + MONTH_LABELS[MONTH_LABELS.length - 1];
       monthsActive = MONTHS.length;
     }
 
