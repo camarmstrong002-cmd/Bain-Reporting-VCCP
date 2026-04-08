@@ -412,6 +412,34 @@
       "impressions": 2273103,
       "clicks": 1995,
       "ctr": 0.0878
+    },
+    {
+      "site": "Nativo Inc.",
+      "month": "2026-03",
+      "impressions": 147,
+      "clicks": 82,
+      "ctr": 55.7823
+    },
+    {
+      "site": "WSJ",
+      "month": "2026-03",
+      "impressions": 1875909,
+      "clicks": 1656,
+      "ctr": 0.0883
+    },
+    {
+      "site": "FT",
+      "month": "2026-03",
+      "impressions": 360374,
+      "clicks": 757,
+      "ctr": 0.2101
+    },
+    {
+      "site": "The Economist",
+      "month": "2026-03",
+      "impressions": 1020424,
+      "clicks": 2762,
+      "ctr": 0.2707
     }
   ],
   "siteRegion": [

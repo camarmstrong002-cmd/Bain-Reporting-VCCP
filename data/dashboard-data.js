@@ -2,29 +2,29 @@
 // Auto-generated from real source files
 // CM360 Report | Media Plans 2025/2026 | SOV Report | Creative Analysis
 
-const MONTHS = ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02"];
-const MONTH_LABELS = ["Jan '25", "Feb '25", "Mar '25", "Apr '25", "May '25", "Jun '25", "Jul '25", "Aug '25", "Sep '25", "Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26"];
+const MONTHS = ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03"];
+const MONTH_LABELS = ["Jan '25", "Feb '25", "Mar '25", "Apr '25", "May '25", "Jun '25", "Jul '25", "Aug '25", "Sep '25", "Oct '25", "Nov '25", "Dec '25", "Jan '26", "Feb '26", "Mar '26"];
 
 const SITE_TOTALS = {
   "The Economist": {
-    "impressions": 13793059,
-    "clicks": 26646,
-    "ctr": 0.1932
+    "impressions": 14813483,
+    "clicks": 29408,
+    "ctr": 0.1985
   },
   "WSJ": {
-    "impressions": 12146806,
-    "clicks": 15192,
-    "ctr": 0.1251
+    "impressions": 14022715,
+    "clicks": 16848,
+    "ctr": 0.1201
   },
   "FT": {
-    "impressions": 7016235,
-    "clicks": 12198,
-    "ctr": 0.1739
+    "impressions": 7376609,
+    "clicks": 12955,
+    "ctr": 0.1756
   },
   "Nativo Inc.": {
-    "impressions": 17287736,
-    "clicks": 37250,
-    "ctr": 0.2155
+    "impressions": 17287883,
+    "clicks": 37332,
+    "ctr": 0.2159
   },
   "Mobkoi": {
     "impressions": 5344703,
@@ -89,6 +89,10 @@ const MONTHLY_TOTALS = {
   "2026-02": {
     "impressions": 3484654,
     "clicks": 4450
+  },
+  "2026-03": {
+    "impressions": 3256854,
+    "clicks": 5257
   }
 };
 
@@ -107,7 +111,8 @@ const SITE_MONTHLY = {
     1304058,
     616471,
     1567498,
-    840848
+    840848,
+    1020424
   ],
   "FT": [
     0,
@@ -123,7 +128,8 @@ const SITE_MONTHLY = {
     369788,
     366638,
     367190,
-    370666
+    370666,
+    360374
   ],
   "WSJ": [
     47,
@@ -139,7 +145,8 @@ const SITE_MONTHLY = {
     782927,
     371653,
     1650159,
-    2273103
+    2273103,
+    1875909
   ],
   "Nativo Inc.": [
     0,
@@ -155,7 +162,8 @@ const SITE_MONTHLY = {
     2029977,
     95,
     75,
-    37
+    37,
+    147
   ],
   "Mobkoi": [
     0,
@@ -168,6 +176,7 @@ const SITE_MONTHLY = {
     0,
     1299156,
     503157,
+    0,
     0,
     0,
     0,
@@ -189,7 +198,8 @@ const SITE_MONTHLY_CLICKS = {
     1475,
     768,
     1379,
-    1780
+    1780,
+    2762
   ],
   "FT": [
     0,
@@ -205,7 +215,8 @@ const SITE_MONTHLY_CLICKS = {
     573,
     517,
     1156,
-    662
+    662,
+    757
   ],
   "WSJ": [
     23,
@@ -221,7 +232,8 @@ const SITE_MONTHLY_CLICKS = {
     1086,
     308,
     1403,
-    1995
+    1995,
+    1656
   ],
   "Nativo Inc.": [
     0,
@@ -237,7 +249,8 @@ const SITE_MONTHLY_CLICKS = {
     4442,
     11,
     26,
-    13
+    13,
+    82
   ],
   "Mobkoi": [
     0,
@@ -253,6 +266,7 @@ const SITE_MONTHLY_CLICKS = {
     2,
     1,
     0,
+    0,
     0
   ]
 };
@@ -260,78 +274,78 @@ const SITE_MONTHLY_CLICKS = {
 const REGION_DATA = [
   {
     "region": "NAM",
-    "impressions": 22226963,
-    "clicks": 38592,
-    "ctr": 0.1736
+    "impressions": 22387478,
+    "clicks": 38938,
+    "ctr": 0.1739
   },
   {
     "region": "Global",
-    "impressions": 11315917,
-    "clicks": 24891,
-    "ctr": 0.22
+    "impressions": 13160581,
+    "clicks": 26558,
+    "ctr": 0.2018
   },
   {
     "region": "EMEA T1",
-    "impressions": 6795393,
-    "clicks": 20827,
-    "ctr": 0.3065
+    "impressions": 7244559,
+    "clicks": 22164,
+    "ctr": 0.3059
   },
   {
     "region": "APAC",
-    "impressions": 6357674,
-    "clicks": 21470,
-    "ctr": 0.3377
+    "impressions": 6563290,
+    "clicks": 21966,
+    "ctr": 0.3347
   },
   {
     "region": "US",
-    "impressions": 4055046,
-    "clicks": 6571,
-    "ctr": 0.162
+    "impressions": 4500850,
+    "clicks": 7447,
+    "ctr": 0.1654
   },
   {
     "region": "EMEA T2",
-    "impressions": 2761279,
-    "clicks": 9643,
-    "ctr": 0.3492
+    "impressions": 2804122,
+    "clicks": 9723,
+    "ctr": 0.3467
   },
   {
     "region": "CA",
     "impressions": 1082180,
-    "clicks": 3137,
-    "ctr": 0.2899
+    "clicks": 3141,
+    "ctr": 0.2903
   },
   {
     "region": "LATAM",
-    "impressions": 994087,
-    "clicks": 2592,
-    "ctr": 0.2607
+    "impressions": 1102333,
+    "clicks": 3043,
+    "ctr": 0.2761
   }
 ];
 
 const TARGETING_DATA = [
   {
     "targeting": "Audience",
-    "impressions": 25058540,
-    "clicks": 63370,
+    "impressions": 25190952,
+    "clicks": 63698,
     "ctr": 0.2529
   },
   {
     "targeting": "Subscribers",
-    "impressions": 13643084,
-    "clicks": 27484,
+    "impressions": 13841274,
+    "clicks": 27883,
     "ctr": 0.2015
   },
   {
     "targeting": "Other",
-    "impressions": 8688893,
-    "clicks": 15982,
-    "ctr": 0.1839
+    "impressions": 10381086,
+    "clicks": 19597,
+    "ctr": 0.1888
   },
   {
     "targeting": "Aud+Context",
-    "impressions": 5395982,
-    "clicks": 7126,
-    "ctr": 0.1321
+    "impressions": 6306480,
+    "clicks": 7745,
+    "ctr": 0.1228
   },
   {
     "targeting": "Contextual",
@@ -341,9 +355,9 @@ const TARGETING_DATA = [
   },
   {
     "targeting": "C-Suite",
-    "impressions": 327140,
-    "clicks": 395,
-    "ctr": 0.1207
+    "impressions": 650701,
+    "clicks": 691,
+    "ctr": 0.1062
   },
   {
     "targeting": "Sponsorship",
@@ -380,9 +394,9 @@ const TOP_PLACEMENTS = [
     "region": "Global",
     "targeting": "Audience",
     "format": "Native",
-    "impressions": 1660517,
-    "clicks": 4154,
-    "ctr": 0.2502
+    "impressions": 1660526,
+    "clicks": 4236,
+    "ctr": 0.2551
   },
   {
     "placement": "Nativo_NAM_Audience_NativeArticle4_AI_UnstickingYourAITransformation_InFeedUnit",
@@ -410,7 +424,7 @@ const TOP_PLACEMENTS = [
     "region": "Global",
     "targeting": "Audience",
     "format": "Native",
-    "impressions": 1552070,
+    "impressions": 1552092,
     "clicks": 3602,
     "ctr": 0.2321
   },
@@ -475,6 +489,16 @@ const TOP_PLACEMENTS = [
     "ctr": 0.2124
   },
   {
+    "placement": "WSJ_Global_DAVOS_CustomABM+Contextual_Display_300x250",
+    "site": "WSJ",
+    "region": "Global",
+    "targeting": "Aud+Context",
+    "format": "300x250",
+    "impressions": 916384,
+    "clicks": 264,
+    "ctr": 0.0288
+  },
+  {
     "placement": "Mobkoi_APAC_Contextual_Display_AI & Macro_Subtheme_Interscroller",
     "site": "Mobkoi",
     "region": "APAC",
@@ -500,9 +524,9 @@ const TOP_PLACEMENTS = [
     "region": "Global",
     "targeting": "Other",
     "format": "Video",
-    "impressions": 802516,
+    "impressions": 803170,
     "clicks": 756,
-    "ctr": 0.0942
+    "ctr": 0.0941
   },
   {
     "placement": "WSJ_NAM_Subscribers_Display_300x250_Q4",
@@ -535,6 +559,16 @@ const TOP_PLACEMENTS = [
     "ctr": 0.7166
   },
   {
+    "placement": "WSJ_Global_RunOfApp_Display_300x250_Q1",
+    "site": "WSJ",
+    "region": "Global",
+    "targeting": "Other",
+    "format": "300x250",
+    "impressions": 674696,
+    "clicks": 900,
+    "ctr": 0.1334
+  },
+  {
     "placement": "WSJ_NAM_Subscribers_Display_Macro_STStrategyActions_FolioRiver",
     "site": "WSJ",
     "region": "NAM",
@@ -545,14 +579,34 @@ const TOP_PLACEMENTS = [
     "ctr": 0.2046
   },
   {
-    "placement": "WSJ_Global_DAVOS_CustomABM+Contextual_Display_300x250",
+    "placement": "WSJ_Global_DAVOS_CustomABM+Contextual_Display_300x600",
     "site": "WSJ",
     "region": "Global",
     "targeting": "Aud+Context",
+    "format": "300x600",
+    "impressions": 570362,
+    "clicks": 249,
+    "ctr": 0.0437
+  },
+  {
+    "placement": "WSJ_Global_DAVOS_CustomABM+Contextual_Display_970x250",
+    "site": "WSJ",
+    "region": "Global",
+    "targeting": "Aud+Context",
+    "format": "970x250",
+    "impressions": 545782,
+    "clicks": 207,
+    "ctr": 0.0379
+  },
+  {
+    "placement": "WSJ_Global_DJID_Display_300x250_Q1",
+    "site": "WSJ",
+    "region": "Global",
+    "targeting": "Other",
     "format": "300x250",
-    "impressions": 576556,
-    "clicks": 179,
-    "ctr": 0.031
+    "impressions": 527369,
+    "clicks": 731,
+    "ctr": 0.1386
   },
   {
     "placement": "WSJ_NAM_CustomABM+Contextual_Display_300x250",
@@ -563,6 +617,16 @@ const TOP_PLACEMENTS = [
     "impressions": 432628,
     "clicks": 159,
     "ctr": 0.0368
+  },
+  {
+    "placement": "WSJ_Global_C-Suite_Display_300x250_Q1",
+    "site": "WSJ",
+    "region": "Global",
+    "targeting": "C-Suite",
+    "format": "300x250",
+    "impressions": 431651,
+    "clicks": 501,
+    "ctr": 0.1161
   },
   {
     "placement": "WSJ_NAM_Subscribers_Display_AI_ReimagineWins_FolioRiver_Q4",
@@ -615,16 +679,6 @@ const TOP_PLACEMENTS = [
     "ctr": 0.1681
   },
   {
-    "placement": "WSJ_Global_DAVOS_CustomABM+Contextual_Display_300x600",
-    "site": "WSJ",
-    "region": "Global",
-    "targeting": "Aud+Context",
-    "format": "300x600",
-    "impressions": 377721,
-    "clicks": 161,
-    "ctr": 0.0426
-  },
-  {
     "placement": "WSJ_NAM_Subscribers_Display_WinwithAI_CompetitiveAdvantage_FolioStandard",
     "site": "WSJ",
     "region": "NAM",
@@ -643,16 +697,6 @@ const TOP_PLACEMENTS = [
     "impressions": 337552,
     "clicks": 1165,
     "ctr": 0.3451
-  },
-  {
-    "placement": "WSJ_Global_DAVOS_CustomABM+Contextual_Display_970x250",
-    "site": "WSJ",
-    "region": "Global",
-    "targeting": "Aud+Context",
-    "format": "970x250",
-    "impressions": 329949,
-    "clicks": 129,
-    "ctr": 0.0391
   },
   {
     "placement": "FT_NAM_Display_Newsletter_AI_MakeAIWork_Q4",
@@ -695,14 +739,14 @@ const TOP_PLACEMENTS = [
     "ctr": 0.2536
   },
   {
-    "placement": "WSJ_Global_RunOfApp_Display_300x250_Q1",
-    "site": "WSJ",
-    "region": "Global",
-    "targeting": "Other",
+    "placement": "FT_NAM_CustomABM+Contextual_Display_300x250_Q4",
+    "site": "FT",
+    "region": "NAM",
+    "targeting": "Aud+Context",
     "format": "300x250",
-    "impressions": 307254,
-    "clicks": 460,
-    "ctr": 0.1497
+    "impressions": 308113,
+    "clicks": 525,
+    "ctr": 0.1704
   },
   {
     "placement": "WSJ_NAM_Subscribers_Display_AI_CEOActions_FolioRiver",
@@ -713,6 +757,16 @@ const TOP_PLACEMENTS = [
     "impressions": 292561,
     "clicks": 643,
     "ctr": 0.2198
+  },
+  {
+    "placement": "Economist_EMEATier1_Feb_Display_Macro_STModels_ResponsiveBillboard_Q1",
+    "site": "The Economist",
+    "region": "EMEA T1",
+    "targeting": "Other",
+    "format": "Other",
+    "impressions": 289951,
+    "clicks": 279,
+    "ctr": 0.0962
   },
   {
     "placement": "WSJ_NAM_Subscribers_Display_Energy_MeetingDemand_FolioRiver",
@@ -745,16 +799,6 @@ const TOP_PLACEMENTS = [
     "ctr": 0.3185
   },
   {
-    "placement": "WSJ_Global_DJID_Display_300x250_Q1",
-    "site": "WSJ",
-    "region": "Global",
-    "targeting": "Other",
-    "format": "300x250",
-    "impressions": 265402,
-    "clicks": 341,
-    "ctr": 0.1285
-  },
-  {
     "placement": "Economist_US_Takeover_HPTO_Jan_Display_970x250_Q1",
     "site": "The Economist",
     "region": "US",
@@ -763,16 +807,6 @@ const TOP_PLACEMENTS = [
     "impressions": 264456,
     "clicks": 121,
     "ctr": 0.0458
-  },
-  {
-    "placement": "FT_NAM_CustomABM+Contextual_Display_300x250_Q4",
-    "site": "FT",
-    "region": "NAM",
-    "targeting": "Aud+Context",
-    "format": "300x250",
-    "impressions": 261245,
-    "clicks": 425,
-    "ctr": 0.1627
   },
   {
     "placement": "WSJ_NAM_Subscribers_Display_300x600_Q4",
@@ -813,16 +847,6 @@ const TOP_PLACEMENTS = [
     "impressions": 243046,
     "clicks": 1790,
     "ctr": 0.7365
-  },
-  {
-    "placement": "WSJ_Global_C-Suite_Display_300x250_Q1",
-    "site": "WSJ",
-    "region": "Global",
-    "targeting": "C-Suite",
-    "format": "300x250",
-    "impressions": 242247,
-    "clicks": 308,
-    "ctr": 0.1271
   },
   {
     "placement": "Mobkoi_APAC_Audience_Display_AI_CEOActions_Interscroller",
@@ -930,9 +954,19 @@ const TOP_PLACEMENTS = [
     "region": "NAM",
     "targeting": "Subscribers",
     "format": "300x250",
-    "impressions": 200747,
-    "clicks": 255,
-    "ctr": 0.127
+    "impressions": 200759,
+    "clicks": 267,
+    "ctr": 0.133
+  },
+  {
+    "placement": "Economist_US_Feb_Display_Macro_STModels_ResponsiveBillboard_Q1",
+    "site": "The Economist",
+    "region": "US",
+    "targeting": "Other",
+    "format": "Other",
+    "impressions": 200281,
+    "clicks": 96,
+    "ctr": 0.0479
   },
   {
     "placement": "FT_APAC_Audience+Contextual_Display_300x250",
@@ -970,9 +1004,9 @@ const TOP_PLACEMENTS = [
     "region": "EMEA T1",
     "targeting": "Subscribers",
     "format": "300x250",
-    "impressions": 190361,
-    "clicks": 296,
-    "ctr": 0.1555
+    "impressions": 190376,
+    "clicks": 314,
+    "ctr": 0.1649
   },
   {
     "placement": "Economist_US_Subscribers_Display_300x600",
@@ -1075,16 +1109,6 @@ const TOP_PLACEMENTS = [
     "ctr": 1.0203
   },
   {
-    "placement": "Economist_EMEATier1_Feb_Display_Macro_STModels_ResponsiveBillboard_Q1",
-    "site": "The Economist",
-    "region": "EMEA T1",
-    "targeting": "Other",
-    "format": "Other",
-    "impressions": 169859,
-    "clicks": 152,
-    "ctr": 0.0895
-  },
-  {
     "placement": "Mobkoi_EMEATier1_Audience_Display_Energy_MeetingDemand_Interscroller",
     "site": "Mobkoi",
     "region": "EMEA T1",
@@ -1115,6 +1139,16 @@ const TOP_PLACEMENTS = [
     "ctr": 0.4932
   },
   {
+    "placement": "Economist_EMEATier1_Feb_Display_Macro_STModels_Interscroller_Q1",
+    "site": "The Economist",
+    "region": "EMEA T1",
+    "targeting": "Other",
+    "format": "Interscroller",
+    "impressions": 168954,
+    "clicks": 903,
+    "ctr": 0.5345
+  },
+  {
     "placement": "Economist_APAC_Subscribers_Display_AI_CompetitiveAdvantage_ResponsiveBillboard",
     "site": "The Economist",
     "region": "APAC",
@@ -1140,9 +1174,9 @@ const TOP_PLACEMENTS = [
     "region": "EMEA T1",
     "targeting": "Aud+Context",
     "format": "300x250",
-    "impressions": 164723,
-    "clicks": 274,
-    "ctr": 0.1663
+    "impressions": 164776,
+    "clicks": 292,
+    "ctr": 0.1772
   },
   {
     "placement": "Economist_EMEATier2_Subscribers_Display_300x250",
@@ -1353,32 +1387,192 @@ const TOP_PLACEMENTS = [
     "impressions": 134774,
     "clicks": 126,
     "ctr": 0.0935
+  },
+  {
+    "placement": "Economist_US_Feb_Display_Macro_STModels_Interscroller_Q1",
+    "site": "The Economist",
+    "region": "US",
+    "targeting": "Other",
+    "format": "Interscroller",
+    "impressions": 128119,
+    "clicks": 655,
+    "ctr": 0.5112
+  },
+  {
+    "placement": "WSJ_Global_RON_Display_300x250_Q1",
+    "site": "WSJ",
+    "region": "Global",
+    "targeting": "Other",
+    "format": "300x250",
+    "impressions": 110526,
+    "clicks": 141,
+    "ctr": 0.1276
+  },
+  {
+    "placement": "Economist_APAC_Feb_Display_Macro_STModels_ResponsiveBillboard_Q1",
+    "site": "The Economist",
+    "region": "APAC",
+    "targeting": "Other",
+    "format": "Other",
+    "impressions": 61664,
+    "clicks": 53,
+    "ctr": 0.0859
+  },
+  {
+    "placement": "Economist_EMEATier1_Audience_Display_300x250_Q1",
+    "site": "The Economist",
+    "region": "EMEA T1",
+    "targeting": "Audience",
+    "format": "300x250",
+    "impressions": 60429,
+    "clicks": 104,
+    "ctr": 0.1721
+  },
+  {
+    "placement": "WSJ_Global_C-Suite_Display_300x600_Q1",
+    "site": "WSJ",
+    "region": "Global",
+    "targeting": "C-Suite",
+    "format": "300x600",
+    "impressions": 52386,
+    "clicks": 29,
+    "ctr": 0.0554
+  },
+  {
+    "placement": "FT_NAM_Subscribers_Display_300x250_Q1",
+    "site": "FT",
+    "region": "NAM",
+    "targeting": "Subscribers",
+    "format": "300x250",
+    "impressions": 44545,
+    "clicks": 52,
+    "ctr": 0.1167
+  },
+  {
+    "placement": "FT_EMEATier1_Subscribers_Display_300x250_Q1",
+    "site": "FT",
+    "region": "EMEA T1",
+    "targeting": "Subscribers",
+    "format": "300x250",
+    "impressions": 44348,
+    "clicks": 52,
+    "ctr": 0.1173
+  },
+  {
+    "placement": "Economist_APAC_Feb_Display_Macro_STModels_Interscroller_Q1",
+    "site": "The Economist",
+    "region": "APAC",
+    "targeting": "Other",
+    "format": "Interscroller",
+    "impressions": 42660,
+    "clicks": 267,
+    "ctr": 0.6259
+  },
+  {
+    "placement": "Economist_LATAM_Feb_Display_Macro_STModels_Interscroller_Q1",
+    "site": "The Economist",
+    "region": "LATAM",
+    "targeting": "Other",
+    "format": "Interscroller",
+    "impressions": 42311,
+    "clicks": 300,
+    "ctr": 0.709
+  },
+  {
+    "placement": "Economist_US_Takeover_Business&Finance_March_Display_300x600",
+    "site": "The Economist",
+    "region": "US",
+    "targeting": "Other",
+    "format": "300x600",
+    "impressions": 42254,
+    "clicks": 24,
+    "ctr": 0.0568
+  },
+  {
+    "placement": "WSJ_Global_C-Suite_Display_970x250_Q1",
+    "site": "WSJ",
+    "region": "Global",
+    "targeting": "C-Suite",
+    "format": "970x250",
+    "impressions": 41799,
+    "clicks": 31,
+    "ctr": 0.0742
+  },
+  {
+    "placement": "WSJ_Global_C-Suite_Display_Macro_STStrategyActions_FolioRiver_Q1",
+    "site": "WSJ",
+    "region": "Global",
+    "targeting": "C-Suite",
+    "format": "Folio",
+    "impressions": 39972,
+    "clicks": 43,
+    "ctr": 0.1076
+  },
+  {
+    "placement": "FT_EMEATier1_CustomABM+Contextual_Display_300x250_Q1",
+    "site": "FT",
+    "region": "EMEA T1",
+    "targeting": "Aud+Context",
+    "format": "300x250",
+    "impressions": 39338,
+    "clicks": 56,
+    "ctr": 0.1424
+  },
+  {
+    "placement": "Economist_US_Takeover_Business&Finance_March_Display_300x250",
+    "site": "The Economist",
+    "region": "US",
+    "targeting": "Other",
+    "format": "300x250",
+    "impressions": 37596,
+    "clicks": 39,
+    "ctr": 0.1037
+  },
+  {
+    "placement": "Economist_LATAM_Feb_Display_Macro_STModels_ResponsiveBillboard_Q1",
+    "site": "The Economist",
+    "region": "LATAM",
+    "targeting": "Other",
+    "format": "Other",
+    "impressions": 31703,
+    "clicks": 36,
+    "ctr": 0.1136
+  },
+  {
+    "placement": "Economist_APAC_Audience_Display_300x250_Q1",
+    "site": "The Economist",
+    "region": "APAC",
+    "targeting": "Audience",
+    "format": "300x250",
+    "impressions": 30475,
+    "clicks": 50,
+    "ctr": 0.1641
   }
 ];
 
-const TOTAL_IMPRESSIONS = 55588539;
-const TOTAL_CLICKS = 127723;
-const OVERALL_CTR = 0.2298;
+const TOTAL_IMPRESSIONS = 58845393;
+const TOTAL_CLICKS = 132980;
+const OVERALL_CTR = 0.226;
 
 // Creative Analysis Data
 const CREATIVE_THEMES = [
   {
     "theme": "AI",
-    "impressions": 13768512,
-    "clicks": 23752,
+    "impressions": 13768555,
+    "clicks": 23766,
     "ctr": 0.17
   },
   {
     "theme": "Energy",
-    "impressions": 5010263,
+    "impressions": 5010267,
     "clicks": 7251,
     "ctr": 0.14
   },
   {
     "theme": "Macro",
-    "impressions": 7555626,
-    "clicks": 15136,
-    "ctr": 0.2
+    "impressions": 8442346,
+    "clicks": 17812,
+    "ctr": 0.21
   }
 ];
 const CREATIVE_MESSAGES = [
@@ -1396,8 +1590,8 @@ const CREATIVE_MESSAGES = [
   },
   {
     "message": "ReimagineWins",
-    "impressions": 2550395,
-    "clicks": 3556,
+    "impressions": 2550397,
+    "clicks": 3560,
     "ctr": 0.14
   },
   {
@@ -1414,15 +1608,15 @@ const CREATIVE_MESSAGES = [
   },
   {
     "message": "UnstickTransformation",
-    "impressions": 1189958,
+    "impressions": 1189980,
     "clicks": 1336,
     "ctr": 0.11
   },
   {
     "message": "STModels",
-    "impressions": 1129836,
-    "clicks": 1443,
-    "ctr": 0.13
+    "impressions": 1925621,
+    "clicks": 3880,
+    "ctr": 0.2
   },
   {
     "message": "Navigation",
@@ -1486,19 +1680,19 @@ const CREATIVE_MESSAGES = [
   },
   {
     "message": "TariffActions",
-    "impressions": 416657,
-    "clicks": 1303,
-    "ctr": 0.31
+    "impressions": 416667,
+    "clicks": 1385,
+    "ctr": 0.33
   },
   {
     "message": "STStrategyActions",
-    "impressions": 384786,
-    "clicks": 819,
-    "ctr": 0.21
+    "impressions": 444213,
+    "clicks": 905,
+    "ctr": 0.2
   },
   {
     "message": "DataCenterDemand",
-    "impressions": 367089,
+    "impressions": 367093,
     "clicks": 888,
     "ctr": 0.24
   },
@@ -1558,7 +1752,7 @@ const CREATIVE_MESSAGES = [
   },
   {
     "message": "STLaggardsLeaders",
-    "impressions": 144302,
+    "impressions": 144304,
     "clicks": 291,
     "ctr": 0.2
   },
@@ -1624,9 +1818,9 @@ const CREATIVE_MESSAGES = [
   },
   {
     "message": "Frontpage",
-    "impressions": 9848,
-    "clicks": 36,
-    "ctr": 0.37
+    "impressions": 41236,
+    "clicks": 107,
+    "ctr": 0.26
   }
 ];
 const MONTHLY_THEME_CTR = [
@@ -1686,6 +1880,16 @@ const MONTHLY_THEME_CTR = [
   {
     "month": "Dec",
     "AI": 0.11
+  },
+  {
+    "month": "Jan '26"
+  },
+  {
+    "month": "Feb '26"
+  },
+  {
+    "month": "Mar '26",
+    "Macro": 0.3
   }
 ];
 
