@@ -22,9 +22,9 @@ const SITE_TOTALS = {
     "ctr": 0.1756
   },
   "Nativo Inc.": {
-    "impressions": 17287883,
-    "clicks": 37332,
-    "ctr": 0.2159
+    "impressions": 17287736,
+    "clicks": 37250,
+    "ctr": 0.2155
   },
   "Mobkoi": {
     "impressions": 5344703,
@@ -91,8 +91,8 @@ const MONTHLY_TOTALS = {
     "clicks": 4450
   },
   "2026-03": {
-    "impressions": 3256854,
-    "clicks": 5257
+    "impressions": 3256707,
+    "clicks": 5175
   }
 };
 
@@ -163,7 +163,7 @@ const SITE_MONTHLY = {
     95,
     75,
     37,
-    147
+    0
   ],
   "Mobkoi": [
     0,
@@ -250,7 +250,7 @@ const SITE_MONTHLY_CLICKS = {
     11,
     26,
     13,
-    82
+    0
   ],
   "Mobkoi": [
     0,
@@ -280,9 +280,9 @@ const REGION_DATA = [
   },
   {
     "region": "Global",
-    "impressions": 13160581,
-    "clicks": 26558,
-    "ctr": 0.2018
+    "impressions": 13160434,
+    "clicks": 26476,
+    "ctr": 0.2012
   },
   {
     "region": "EMEA T1",
@@ -325,9 +325,9 @@ const REGION_DATA = [
 const TARGETING_DATA = [
   {
     "targeting": "Audience",
-    "impressions": 25190952,
-    "clicks": 63698,
-    "ctr": 0.2529
+    "impressions": 25190805,
+    "clicks": 63616,
+    "ctr": 0.2525
   },
   {
     "targeting": "Subscribers",
@@ -394,9 +394,9 @@ const TOP_PLACEMENTS = [
     "region": "Global",
     "targeting": "Audience",
     "format": "Native",
-    "impressions": 1660526,
-    "clicks": 4236,
-    "ctr": 0.2551
+    "impressions": 1660517,
+    "clicks": 4154,
+    "ctr": 0.2502
   },
   {
     "placement": "Nativo_NAM_Audience_NativeArticle4_AI_UnstickingYourAITransformation_InFeedUnit",
@@ -424,7 +424,7 @@ const TOP_PLACEMENTS = [
     "region": "Global",
     "targeting": "Audience",
     "format": "Native",
-    "impressions": 1552092,
+    "impressions": 1552070,
     "clicks": 3602,
     "ctr": 0.2321
   },
@@ -1550,15 +1550,15 @@ const TOP_PLACEMENTS = [
   }
 ];
 
-const TOTAL_IMPRESSIONS = 58845393;
-const TOTAL_CLICKS = 132980;
-const OVERALL_CTR = 0.226;
+const TOTAL_IMPRESSIONS = 58845246;
+const TOTAL_CLICKS = 132898;
+const OVERALL_CTR = 0.2258;
 
 // Creative Analysis Data
 const CREATIVE_THEMES = [
   {
     "theme": "AI",
-    "impressions": 13768555,
+    "impressions": 13768533,
     "clicks": 23766,
     "ctr": 0.17
   },
@@ -1570,8 +1570,8 @@ const CREATIVE_THEMES = [
   },
   {
     "theme": "Macro",
-    "impressions": 8442346,
-    "clicks": 17812,
+    "impressions": 8442221,
+    "clicks": 17730,
     "ctr": 0.21
   }
 ];
@@ -1608,7 +1608,7 @@ const CREATIVE_MESSAGES = [
   },
   {
     "message": "UnstickTransformation",
-    "impressions": 1189980,
+    "impressions": 1189958,
     "clicks": 1336,
     "ctr": 0.11
   },
@@ -1680,9 +1680,9 @@ const CREATIVE_MESSAGES = [
   },
   {
     "message": "TariffActions",
-    "impressions": 416667,
-    "clicks": 1385,
-    "ctr": 0.33
+    "impressions": 416657,
+    "clicks": 1303,
+    "ctr": 0.31
   },
   {
     "message": "STStrategyActions",

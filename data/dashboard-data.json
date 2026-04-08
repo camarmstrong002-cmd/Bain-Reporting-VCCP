@@ -1,9 +1,9 @@
 {
   "cm360": {
     "rawRows": 2057,
-    "totalImpressions": 58845393,
-    "totalClicks": 132980,
-    "overallCTR": 0.226,
+    "totalImpressions": 58845246,
+    "totalClicks": 132898,
+    "overallCTR": 0.2258,
     "siteMonthly": [
       {
         "site": "FT",
@@ -417,13 +417,6 @@
         "impressions": 2273103,
         "clicks": 1995,
         "ctr": 0.0878
-      },
-      {
-        "site": "Nativo Inc.",
-        "month": "2026-03",
-        "impressions": 147,
-        "clicks": 82,
-        "ctr": 55.7823
       },
       {
         "site": "WSJ",
